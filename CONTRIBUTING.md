@@ -1,6 +1,6 @@
 # Contributing
 
-This is an unofficial LG webOS 3.x port of Nuvio, distributed under the existing GPLv3 license. See the [compatibility matrix](docs/COMPATIBILITY.md) and [maintenance rules](docs/MAINTENANCE.md). Submit issues and pull requests to this repository, not the original project's tracker for port-specific problems.
+This is an unofficial LG webOS 3.x port of Nuvio, distributed under the existing GPLv3 license. See the [compatibility matrix](docs/COMPATIBILITY.md) and [maintenance rules](docs/MAINTENANCE.md). Submit issues and pull requests to this repository, not the original project's tracker for port-specific problems. The [documentation index](docs/index.md) routes common tasks; [AGENTS.md](AGENTS.md) provides the code map, commands and invariants for coding assistants.
 
 Use Node.js 22 or newer and `npm ci --ignore-scripts`. Run `npm run validate:public` before proposing a change. The command writes logs outside the source tree and does not access a TV. On the Mac, builds can reuse an upstream IPK's configuration locally; never attach that configured package or `local.properties` to a public issue.
 
