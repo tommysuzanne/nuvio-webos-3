@@ -2,13 +2,27 @@
 
 First check the [compatibility matrix](../COMPATIBILITY.md): this package targets UHD / 4K webOS 3.0/3.5. Other models are not automatically validated; Full HD models need a separate 720p graphics package.
 
-Use Node.js 22 LTS, npm and a Unix shell on macOS or Linux. The locked webOS CLI is installed by `npm ci --ignore-scripts`; do not use a floating global CLI to reproduce a build. The services shipped to the TV still target Node 0.12.2, and the UI targets Chromium 38.
+Installing the published IPK with the graphical tool below does not require Node.js or a source build. For the source-build and CLI instructions, use Node.js 22 LTS, npm and a Unix shell on macOS or Linux. The locked webOS CLI is installed by `npm ci --ignore-scripts`; do not use a floating global CLI to reproduce a build. The services shipped to the TV still target Node 0.12.2, and the UI targets Chromium 38.
 
 ## Ready-to-install public package
 
 Download the IPK and `SHA256SUMS` from [release 1.1.2-uj630.43](https://github.com/tommysuzanne/nuvio-webos-3/releases/tag/1.1.2-uj630.43). Verify with `shasum -a 256 -c SHA256SUMS` on macOS or `sha256sum -c SHA256SUMS` on Linux. Substitute its filename for the locally built package in the installation commands below.
 
 This package uses only the existing public client configuration of the pinned `webos3-exp.32` upstream package. It includes no maintainer account, configured addons, personal API keys, collection exports or artwork. Authenticate with your own account. Public integration configuration is not a guarantee of continued access to upstream services.
+
+### Graphical installation (no source build)
+
+[webOS Dev Manager](https://github.com/webosbrew/dev-manager-desktop) offers graphical device pairing and IPK installation on Windows, macOS and Linux. This route is also highlighted by [iqui27's installation guide](https://github.com/iqui27/NuvioTVSmart-legacy-webos/blob/e09ca3ff7b91df4fe5cfb972130f4645883cc898/INSTALL.md).
+
+1. Download the manager from [its official releases](https://github.com/webosbrew/dev-manager-desktop/releases), and the Nuvio IPK from this repository's release above. Verify the IPK checksum.
+2. Before updating an existing Nuvio installation, follow [Back up and connect](#back-up-and-connect). Install LG's Developer Mode app on the TV, enable the mode, restart as instructed and enable Key Server for pairing.
+3. Put the computer and TV on the same local network. Use the manager's device setup to connect using the TV's address and Developer Mode pairing details. Keep those details private.
+4. Close Nuvio, then use the manager's app installation action to select the downloaded IPK. Do not uninstall the existing app merely to update it.
+5. Follow [Update and verify](#update-and-verify), including the running-service check or TV restart and confirming the new build label. Reopen Nuvio and sign in with your own account.
+
+Developer Mode is still required; the manager does not make this package permanent. This is an optional external installation tool, not a bundled TV plugin. Its availability does not extend this port's TV compatibility claims.
+
+### Reproduce the public package
 
 To reproduce that build from a clean checkout:
 

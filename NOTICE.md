@@ -7,4 +7,6 @@
 - `scripts/fixtures/uj630-rescue/` freezes five files from the legacy rescue implementation solely to reproduce its read-only regression tests. It is not an additional runtime or a complete installable rescue source tree.
 - `scripts/fixtures/uj630-images/` contains deterministic synthetic noise JPEGs created for tests. No user or third-party movie artwork is used by those tests.
 
+The current [fork rationale and comparison](docs/WHY-THIS-FORK.md) distinguishes inherited functionality from this project's adaptations. Repository presentation draws on the legacy project's purpose/build-choice/evidence structure, with original wording and this project's own measurements.
+
 The original GNU GPL v3 license is retained in LICENSE. Existing source headers and bundled third-party notices remain applicable. Personal poster/logo thumbnails, private configuration and account data were deliberately excluded from this public snapshot. Optional local artwork preparation does not confer redistribution rights to downloaded images.
