@@ -1,4 +1,4 @@
-name: UJ630 public validation
+name: webOS 3.x validation
 on:
   push:
     branches: [main]

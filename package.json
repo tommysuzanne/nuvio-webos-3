@@ -76,10 +76,10 @@
     "libbitsub": "^1.10.1",
     "quickjs-emscripten": "^0.32.0"
   },
-  "description": "Community Nuvio 1.1.2 port for LG UJ630 / Chromium 38, with bounded caches and collection navigation",
+  "description": "Unofficial Nuvio 1.1.2 port for LG UHD webOS 3.x (3.0/3.5), with 1080p UI and Chromium 38 compatibility; tested on UJ630",
   "license": "GPL-3.0-only",
   "repository": {
     "type": "git",
-    "url": "https://github.com/tommysuzanne/nuvio-webos-uj630.git"
+    "url": "https://github.com/tommysuzanne/nuvio-webos-3.git"
   }
 }

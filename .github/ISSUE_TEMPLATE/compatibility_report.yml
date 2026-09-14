@@ -1,0 +1,57 @@
+name: TV compatibility report
+description: Help document Nuvio installation on another LG webOS 3.x TV.
+title: "[Compatibility] LG model / webOS version"
+body:
+  - type: markdown
+    attributes:
+      value: |
+        UHD webOS 3.x models are candidates, not guaranteed compatible. FHD TVs need a separate 720p graphics package; the public IPK is 1080p.
+        Do not include serial numbers, account exports, API keys, configured addon URLs, raw localStorage or private screenshots.
+  - type: input
+    id: model
+    attributes:
+      label: Full TV model (including suffix, no serial number)
+    validations:
+      required: true
+  - type: input
+    id: versions
+    attributes:
+      label: webOS platform / SDK version and firmware
+      description: Firmware version is not the same as webOS version. Say unknown if you cannot determine it.
+    validations:
+      required: true
+  - type: dropdown
+    id: display
+    attributes:
+      label: Panel resolution
+      options:
+        - UHD / 4K
+        - Full HD
+        - Unknown
+    validations:
+      required: true
+  - type: input
+    id: build
+    attributes:
+      label: Exact IPK filename and build label
+    validations:
+      required: true
+  - type: textarea
+    id: results
+    attributes:
+      label: Installation, startup, login and navigation results
+      description: Describe what worked, what failed and what was not tested. Include remote/pointer behavior and collection navigation.
+    validations:
+      required: true
+  - type: textarea
+    id: playback
+    attributes:
+      label: Playback and other checks
+      description: Use lawful samples. Describe codec, resolution, audio, subtitles, seeking, standby/restart and test duration. Do not post private source URLs.
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Report scope
+      options:
+        - label: I removed personal data and understand this report does not establish full qualification or universal codec support.
+          required: true

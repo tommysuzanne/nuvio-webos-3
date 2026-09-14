@@ -1,16 +1,16 @@
 name: Bug report
-description: Report a reproducible issue in the UJ630 port.
+description: Report a reproducible issue in the webOS 3.x port.
 title: "[Bug] "
 body:
   - type: markdown
     attributes:
       value: |
         Do not attach API keys, configured addon URLs, IPKs, collection exports, account backups or raw private logs.
-        This is the unofficial UJ630 port. Include the build label and reproduce the problem before reporting it.
+        This is the unofficial webOS 3.x port. Include the build label and reproduce the problem before reporting it.
   - type: input
     id: device
     attributes:
-      label: TV model, firmware and build label
+      label: TV model, webOS version, FHD/UHD, firmware and build label
     validations:
       required: true
   - type: textarea
