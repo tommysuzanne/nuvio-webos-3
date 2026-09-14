@@ -1,5 +1,8 @@
 blank_issues_enabled: true
 contact_links:
-  - name: Build and installation instructions
-    url: https://github.com/tommysuzanne/nuvio-webos-uj630/blob/main/docs/UJ630/INSTALLATION.md
-    about: Build this legacy port locally; official Nuvio packages do not include these adaptations.
+  - name: Install Nuvio on LG webOS 3.x
+    url: https://github.com/tommysuzanne/nuvio-webos-3/blob/main/docs/UJ630/INSTALLATION.md
+    about: Download the IPK, check compatibility and install with Developer Mode.
+  - name: Compatibility and tested models
+    url: https://github.com/tommysuzanne/nuvio-webos-3/blob/main/docs/COMPATIBILITY.md
+    about: UHD webOS 3.x target, tested UJ630, FHD and older-version limitations.

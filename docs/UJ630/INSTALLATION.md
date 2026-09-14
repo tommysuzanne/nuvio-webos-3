@@ -1,10 +1,12 @@
-# Build and install the 1080p port
+# Install Nuvio on LG webOS 3.x — 1080p IPK
+
+First check the [compatibility matrix](../COMPATIBILITY.md): this package targets UHD / 4K webOS 3.0/3.5. Other models are not automatically validated; Full HD models need a separate 720p graphics package.
 
 Use Node.js 22 LTS, npm and a Unix shell on macOS or Linux. The locked webOS CLI is installed by `npm ci --ignore-scripts`; do not use a floating global CLI to reproduce a build. The services shipped to the TV still target Node 0.12.2, and the UI targets Chromium 38.
 
 ## Ready-to-install public package
 
-Download the IPK and `SHA256SUMS` from [release 1.1.2-uj630.43](https://github.com/tommysuzanne/nuvio-webos-uj630/releases/tag/1.1.2-uj630.43). Verify with `shasum -a 256 -c SHA256SUMS` on macOS or `sha256sum -c SHA256SUMS` on Linux. Substitute its filename for the locally built package in the installation commands below.
+Download the IPK and `SHA256SUMS` from [release 1.1.2-uj630.43](https://github.com/tommysuzanne/nuvio-webos-3/releases/tag/1.1.2-uj630.43). Verify with `shasum -a 256 -c SHA256SUMS` on macOS or `sha256sum -c SHA256SUMS` on Linux. Substitute its filename for the locally built package in the installation commands below.
 
 This package uses only the existing public client configuration of the pinned `webos3-exp.32` upstream package. It includes no maintainer account, configured addons, personal API keys, collection exports or artwork. Authenticate with your own account. Public integration configuration is not a guarantee of continued access to upstream services.
 
