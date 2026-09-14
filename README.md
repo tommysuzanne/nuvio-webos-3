@@ -14,9 +14,9 @@ Based on **Nuvio 1.1.2**, with credit to [NuvioMedia](https://github.com/NuvioMe
 
 ## Why choose this fork?
 
-**A collection-focused Nuvio experience tuned on a real webOS 3 TV, with a sharp 1080p interface.** The project started because making Nuvio launch was not enough for comfortable browsing of large collections on an LG UJ630. It adds a fixed, lighter Home presentation, bounded image/cache work, reliable collection refresh and targeted navigation/sync fixes.
+**A collection-focused Nuvio experience tuned on a real webOS 3 TV, with a sharp 1080p interface.** The project started because making Nuvio launch was not enough for comfortable browsing of large collections on an LG UJ630. It **ports the Nuvio 1.1.2 reference onto the older webOS 3 foundation**, then adds a fixed, lighter Home presentation, bounded image/cache work, reliable collection refresh and targeted navigation/sync fixes.
 
-[iqui27 already provides a webOS 3 preview](https://github.com/iqui27/NuvioTVSmart-legacy-webos/releases/tag/webos3-exp.32), and this project builds on that foundation. Nuvio's collections, player and integrations come from upstream; our contribution is their adaptation and consolidation for this use case, based on Nuvio 1.1.2.
+[iqui27 already provides a webOS 3 preview](https://github.com/iqui27/NuvioTVSmart-legacy-webos/releases/tag/webos3-exp.32), and this project builds on that foundation. **Its webOS 3 exp.32 line integrates Nuvio 1.0.2 plus legacy fixes; our port integrates Nuvio 1.1.2.** iqui27's separate webOS 4 release is based on 1.1.0. These are different branches, reviewed on 2026-09-15. The new application features belong to NuvioMedia; bringing that newer reference to this legacy target is part of our work.
 
 | Choose this port if… | Consider another build if… |
 | --- | --- |

@@ -6,12 +6,13 @@
 
 ## Pourquoi cette version existe ?
 
-**Une expérience Nuvio centrée sur les collections, adaptée sur une vraie TV webOS 3 et conservant une interface 1080p nette.** Le point de départ était concret : lancer l’application ne suffisait pas pour naviguer confortablement dans de nombreuses collections sur une LG UJ630. Ce port ajoute un accueil fixe et allégé, des caches bornés, une actualisation ciblée et des corrections de navigation et de synchronisation.
+**Une expérience Nuvio centrée sur les collections, adaptée sur une vraie TV webOS 3 et conservant une interface 1080p nette.** Le point de départ était concret : lancer l’application ne suffisait pas pour naviguer confortablement dans de nombreuses collections sur une LG UJ630. Nous avons **porté la référence Nuvio 1.1.2 sur cette base webOS 3**, puis ajouté un accueil fixe et allégé, des caches bornés, une actualisation ciblée et des corrections de navigation et de synchronisation.
 
-[iqui27 propose déjà un port expérimental webOS 3](https://github.com/iqui27/NuvioTVSmart-legacy-webos/releases/tag/webos3-exp.32), qui constitue notre base de compatibilité. Les collections, le lecteur et les intégrations viennent de Nuvio. Notre apport est leur adaptation et leur consolidation pour cet usage, avec la référence Nuvio 1.1.2.
+[iqui27 propose déjà un port expérimental webOS 3](https://github.com/iqui27/NuvioTVSmart-legacy-webos/releases/tag/webos3-exp.32), qui constitue notre base de compatibilité. **Sa branche webOS 3 exp.32 intègre Nuvio 1.0.2 et des correctifs legacy ; notre port intègre Nuvio 1.1.2.** Sa release webOS 4, distincte, repose sur 1.1.0. Comparaison vérifiée le 15 septembre 2026. Les nouvelles fonctions viennent des auteurs de Nuvio ; leur portage vers cette ancienne plateforme fait bien partie de notre travail.
 
 | Ce que cette version apporte | Compromis à connaître |
 | --- | --- |
+| Portage de la référence **Nuvio 1.1.2**, plus récente que la base 1.0.2 de la preview webOS 3 d’iqui27. | Chaque fonction reste soumise aux capacités de la TV ; l’autosynchronisation audio des sous-titres n’est pas annoncée validée. |
 | Accueil collections + Reprendre, couvertures rectangulaires, fond fixe et navigation optimisée. | La présentation complète avec grands arrière-plans et catalogues par défaut n’est pas conservée. |
 | Collections actualisées sans réinstaller ; réponses périmées ou invalides écartées. | Création et organisation depuis un autre appareil ; lecture seule sur la TV. |
 | Chargement progressif des images, caches limités, écrans chargés à la demande et corrections des accents/addons. | Les images trop lourdes ou incompatibles peuvent céder la place à une carte avec titre. |

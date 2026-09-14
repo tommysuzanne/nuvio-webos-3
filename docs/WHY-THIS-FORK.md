@@ -14,6 +14,20 @@ iqui27 already provides a webOS 3 preview. This project builds on that work; it 
 | webOS 5+ | Start with [official Nuvio releases](https://github.com/NuvioMedia/NuvioTVSmart/releases) and their current requirements. |
 | FHD webOS 3, or webOS 1/2 | The downloadable 1080p package here is not a qualified solution. See [compatibility](COMPATIBILITY.md). |
 
+## A newer Nuvio version, ported here
+
+This is a second reason to choose this project beyond its UX policy: **we integrated Nuvio 1.1.2 into the webOS 3 port ourselves**. Crediting the legacy foundation must not obscure that integration work.
+
+| Project / line, checked 2026-09-15 | Nuvio reference |
+| --- | --- |
+| iqui27 **webOS 3**, exp.32 / `legacy-tv-webos3` at `b070733` | **1.0.2**, plus subsequent legacy-specific fixes. Both its package version and history identify that integration. |
+| iqui27 **webOS 4**, `webos-port-1.1.0` | **1.1.0**; this is not its webOS 3 release. |
+| This project's build43 | **1.1.2**, integrated with the legacy compatibility foundation and the changes below. |
+
+The webOS 3 history records [the upstream 1.0.2 integration](https://github.com/iqui27/NuvioTVSmart-legacy-webos/commit/e4a217547624) before the [exp.32 merge](https://github.com/iqui27/NuvioTVSmart-legacy-webos/commit/b070733572dc47e14102abeca2b48cc9ce24e9a4); [its package manifest](https://github.com/iqui27/NuvioTVSmart-legacy-webos/blob/b070733572dc47e14102abeca2b48cc9ce24e9a4/package.json) also declares 1.0.2. The default branch's newer 1.1.0 release must not be substituted for that webOS 3 baseline, nor should an old README label such as 0.3.42 be treated as the current code version.
+
+For example, [Nuvio 1.1.2](https://github.com/NuvioMedia/NuvioTVSmart/releases/tag/1.1.2) adds persistent subtitle-delay controls by profile/video, changes subtitle-track preference handling and improves Discover artwork hydration. These are upstream features integrated here, not invented by this fork. The release also adds subtitle Auto Sync upstream, but audio capture/Auto Sync is **not qualified on this TV**. A newer source reference does not certify every upstream capability on an old engine.
+
 ## What comes from upstream?
 
 The application, account system, collections, Continue Watching/Next Up, metadata integrations, addon model and player originate in **NuvioMedia's Nuvio**. This port integrates the **1.1.2** reference; it does not claim authorship of those features.
