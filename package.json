@@ -35,7 +35,8 @@
     "validate:uj630": "node scripts/validate-uj630.mjs",
     "build:uj630": "node scripts/build-uj630-public.mjs",
     "check:public": "node scripts/check-public-release.mjs",
-    "validate:public": "node scripts/validate-public.mjs"
+    "validate:public": "node scripts/validate-public.mjs",
+    "build:release": "node scripts/build-public-release.mjs"
   },
   "devDependencies": {
     "@babel/core": "^7.29.7",

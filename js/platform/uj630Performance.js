@@ -3,7 +3,7 @@
 const KEY = "nuvioDevicePerformance";
 
 export function isUj630CollectionsReadOnly() {
-  // This port is a receiver. The performance switch cannot enable cloud writes.
+  // This port is a receiver. Presentation preferences cannot enable cloud writes.
   return supportsUj630Performance();
 }
 
@@ -21,12 +21,9 @@ export function supportsUj630Performance() {
 }
 
 export function isUj630PerformanceEnabled() {
-  if (!supportsUj630Performance()) return false;
-  try {
-    return JSON.parse(globalThis.localStorage?.getItem(KEY) || "null")?.enabled !== false;
-  } catch (_) {
-    return true;
-  }
+  // Permanent device policy. Ignore the obsolete local enabled preference so
+  // upgrading a TV with the old switch disabled still enables these safeguards.
+  return supportsUj630Performance();
 }
 
 export function syncUj630PerformanceClass() {
@@ -36,13 +33,6 @@ export function syncUj630PerformanceClass() {
     classes.toggle("uj630-lite", enabled);
   }
   return enabled;
-}
-
-export function setUj630PerformanceEnabled(enabled) {
-  let saved = {};
-  try { saved = JSON.parse(globalThis.localStorage.getItem(KEY) || "{}") || {}; } catch (_) {}
-  globalThis.localStorage.setItem(KEY, JSON.stringify({ ...saved, enabled: Boolean(enabled) }));
-  syncUj630PerformanceClass();
 }
 
 export function isUj630CollectionsEnabled() {

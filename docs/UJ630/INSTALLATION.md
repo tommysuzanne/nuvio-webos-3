@@ -2,6 +2,21 @@
 
 Use Node.js 22 LTS, npm and a Unix shell on macOS or Linux. The locked webOS CLI is installed by `npm ci --ignore-scripts`; do not use a floating global CLI to reproduce a build. The services shipped to the TV still target Node 0.12.2, and the UI targets Chromium 38.
 
+## Ready-to-install public package
+
+Download the IPK and `SHA256SUMS` from [release 1.1.2-uj630.43](https://github.com/tommysuzanne/nuvio-webos-uj630/releases/tag/1.1.2-uj630.43). Verify with `shasum -a 256 -c SHA256SUMS` on macOS or `sha256sum -c SHA256SUMS` on Linux. Substitute its filename for the locally built package in the installation commands below.
+
+This package uses only the existing public client configuration of the pinned `webos3-exp.32` upstream package. It includes no maintainer account, configured addons, personal API keys, collection exports or artwork. Authenticate with your own account. Public integration configuration is not a guarantee of continued access to upstream services.
+
+To reproduce that build from a clean checkout:
+
+```sh
+npm ci --ignore-scripts
+npm run build:release
+```
+
+The script pins the upstream URL and SHA-256, refuses existing `local.properties` and personal artwork, and writes the IPK, checksum and provenance manifest into a sibling `nuvio-public-release` directory. You may pass an already downloaded upstream IPK as the sole argument; the same checksum is required. Use `NUVIO_RELEASE_DIR` to choose another output directory outside the checkout.
+
 ## Configuration and build
 
 ```sh
@@ -13,7 +28,7 @@ Obtain the compatible package yourself from [the legacy project's releases](http
 
 Alternatively copy `local.example.properties` to ignored `local.properties`, supply configuration for a backend you are authorized to use, then run `npm run build:uj630`. Personal MDBList/TMDB keys and addon setup belong in your own application settings, not in Git. Do not commit a configured package, generated runtime configuration, or personal collection export.
 
-The output is `space.nuvio.webos_1.1.2_all.ipk` in the checkout. Check the printed build label and package name before installation. The wrapper fixes the UI at 1920 × 1080. This is independent of the resolution of a movie.
+The output is `space.nuvio.webos_1.1.2_all.ipk` in the checkout. Check the printed build label and package name before installation. The build43 performance policy is permanent on the targeted legacy TV engine; the obsolete disabled flag is ignored without altering profile settings. The wrapper fixes the UI at 1920 × 1080. This is independent of the resolution of a movie.
 
 To check the build without backend configuration, run `npm run validate:public`. This makes a **CHECK-ONLY** placeholder package which cannot authenticate; never install or distribute it as a working release. The check refuses to overwrite existing `local.properties`.
 

@@ -4,20 +4,26 @@
 
 An **unofficial community port of Nuvio 1.1.2** for older LG TVs using Chromium 38 and Node 0.12.2. It combines the work of [NuvioMedia/NuvioTVSmart](https://github.com/NuvioMedia/NuvioTVSmart), [iqui27's legacy webOS port](https://github.com/iqui27/NuvioTVSmart-legacy-webos), and the UJ630 optimizations published here.
 
-**Tested hardware:** LG 49UJ630V-ZA, firmware 06.10.75, 1920 × 1080 interface. Other TVs are not qualified by these results. This is a source distribution, not an official Nuvio release or a promise of zero lag.
+**Tested hardware:** LG 49UJ630V-ZA, firmware 06.10.75, 1920 × 1080 interface. Other TVs are not qualified by these results. This is an unofficial community release, not an official Nuvio release or a promise of zero lag.
 
 ## What this port changes
 
 - Collection folders and Continue Watching on the home screen, including next and upcoming episodes. No extra catalog requests or fallback catalog rows.
 - Collections and organization are **read-only on the TV**. Create and organize them on another Nuvio client. Validated remote refresh after five minutes on eligible home/foreground entry; no permanent polling.
-- Virtualized rows/cards, stable remote-control focus and a compact left menu. Fixed background and immediate focus outline; no decorative home/folder animations.
+- Virtualized rows/cards, stable remote-control focus and a compact left menu. Fixed background and immediate focus outline; no decorative home/folder animations. Build43 makes the UJ630 performance policy permanent and removes the old switch, including for devices with an old disabled preference.
 - Bounded image/result/metadata caches, prioritized image work, real transport cancellation and lazy screen chunks. Progress saves remain essential work.
 - Display-only UTF-8 repair, corrected addon synchronization, 4K-first stream ordering and Next Up error recovery.
 - Optional local thumbnail preparation, including **16:9 full-frame covers without stretching**. Personal artwork and collection exports are not included.
 
 The interface remains 1080p; this does not limit the video's resolution. Playback still depends on the TV's native codecs, the stream and the network. Executable/P2P plugins unsupported on this hardware remain blocked.
 
-## Getting started
+## Download a compiled package
+
+Download **Nuvio-1.1.2-UJ630-43-1080p.ipk** and its SHA-256 checksum from the [43 release](https://github.com/tommysuzanne/nuvio-webos-uj630/releases/tag/1.1.2-uj630.43). It uses the existing public client configuration from the pinned legacy upstream package. It contains **no maintainer account, personal API keys, configured addons, profile exports or private artwork**. Sign in to your own account and configure your own addons. Availability of upstream login/backend services remains outside this port's control.
+
+The optimized performance policy is automatic on legacy webOS Chromium 38; there is no longer a Fluent Mode switch. Other engines do not receive that device policy.
+
+## Build from sources
 
 ```sh
 git clone https://github.com/tommysuzanne/nuvio-webos-uj630.git
@@ -26,7 +32,7 @@ npm ci --ignore-scripts
 npm run build:uj630 -- /absolute/path/to/your-compatible-upstream-webos.ipk
 ```
 
-Use an existing compatible IPK obtained from the [legacy upstream releases](https://github.com/iqui27/NuvioTVSmart-legacy-webos/releases). The helper reads its existing literal runtime configuration locally; it does not upload your credentials. Alternatively, configure your own ignored `local.properties` from `local.example.properties`. No backend keys or configured ready-to-install binary are published here.
+For the same configuration as the public release, run `npm run build:release`; the script downloads and verifies the pinned upstream package and refuses local configuration or artwork. Otherwise use an existing compatible IPK obtained from the [legacy upstream releases](https://github.com/iqui27/NuvioTVSmart-legacy-webos/releases). The helper reads its existing literal runtime configuration locally; it does not upload your credentials. Alternatively, configure your own ignored `local.properties` from `local.example.properties`. The downloadable release reuses only configuration already distributed publicly by upstream; personal backend settings and API keys must remain local.
 
 **Developer Mode must remain enabled and renewed before expiry.** A USB drive alone does not make a developer installation permanent. This project does not root or modify the TV firmware. See the [installation and service restart procedure](docs/UJ630/INSTALLATION.md) before upgrading: an old service process can survive a package replacement.
 

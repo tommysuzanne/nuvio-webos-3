@@ -35,7 +35,8 @@ for(const call of [()=>collections.replaceForProfile(1,[],{silentSync:true}),
   assert.throws(call,e=>e.code==='COLLECTIONS_READ_ONLY');
 assert.deepEqual(raw,before);
 organization.ensureOrderKeysWithPrefs(['collection:c','new']);assert.deepEqual(raw,before);
-policy.setUj630PerformanceEnabled(false);assert(policy.isUj630CollectionsReadOnly());
+raw.set("nuvioDevicePerformance",JSON.stringify({enabled:false}));
+assert(policy.isUj630PerformanceEnabled());assert(policy.isUj630CollectionsReadOnly());
 assert.throws(()=>collections.replace([]),e=>e.code==='COLLECTIONS_READ_ONLY');
 ua.userAgent='Chrome/130';collections.replaceForProfile(2,[],{silentSync:true});
 ua.userAgent='Mozilla/5.0 (Web0S) Chrome/38.0';
