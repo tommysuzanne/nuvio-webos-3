@@ -1,0 +1,1047 @@
+import { SCREEN_CHUNK_MANIFEST } from "../../runtime/screenChunkManifest.js";
+import { setUj630BrowseStyleRoute } from "../../platform/uj630BrowseStyles.js";
+import { setUj630ActivityRoute } from "../../platform/uj630Activity.js";
+import { supportsUj630Performance } from "../../platform/uj630Performance.js";
+import { ProfileManager } from "../../core/profile/profileManager.js";
+import { HomeScreen } from "../screens/home/homeScreen.js";
+import { AccountScreen } from "../screens/account/accountScreen.js";
+import { AuthQrSignInScreen } from "../screens/account/authQrSignInScreen.js";
+import { AuthSignInScreen } from "../screens/account/authSignInScreen.js";
+import { ServerConnectionScreen } from "../screens/account/serverConnectionScreen.js";
+import { SyncCodeScreen } from "../screens/account/syncCodeScreen.js";
+import { ProfileSelectionScreen } from "../../core/profile/profileSelectionScreen.js";
+import { LibraryScreen } from "../screens/library/libraryScreen.js";
+import { ConsoleDebugScreen } from "../screens/debug/consoleDebugScreen.js";
+import { ExperienceModeSelectionScreen } from "../screens/onboarding/experienceModeSelectionScreen.js";
+import { EssentialAddonSetupScreen } from "../screens/onboarding/essentialAddonSetupScreen.js";
+import { LicensesAttributionsScreen } from "../screens/settings/licensesAttributionsScreen.js";
+import { PluginScreen } from "../screens/plugin/pluginScreen.js";
+import { PluginsScreen } from "../screens/plugin/pluginsScreen.js";
+import { CatalogOrderScreen } from "../screens/plugin/catalogOrderScreen.js";
+import { CastDetailScreen } from "../screens/cast/castDetailScreen.js";
+import { CatalogSeeAllScreen } from "../screens/catalog/catalogSeeAllScreen.js";
+import { TmdbEntityBrowseScreen } from "../screens/tmdb/tmdbEntityBrowseScreen.js";
+import { FolderDetailScreen } from "../screens/collection/folderDetailScreen.js";
+import { Platform } from "../../platform/index.js";
+import { TizenCapabilities } from "../../platform/tizen/tizenCapabilities.js";
+import { RouteStateStore } from "./routeStateStore.js";
+import { LocalStore } from "../../core/storage/localStore.js";
+import { LazyRouteRegistry } from "../../runtime/lazyRoutes.js";
+import { loadScreenChunk, isScreenChunkLoaded } from "../../runtime/loadScreenChunks.js";
+import {
+  beginChunkLoadingIndicator,
+  endChunkLoadingIndicator,
+  reportChunkLoadFailure
+} from "../../runtime/chunkLoadingOverlay.js";
+
+const ROUTER_PERF_DEBUG = Boolean(
+  globalThis.__NUVIO_DEBUG_ROUTER_PERF__ || globalThis.__NUVIO_DEBUG_HOME_PERF__
+);
+
+function routerPerfNow() {
+  return typeof performance !== "undefined" && typeof performance.now === "function"
+    ? performance.now()
+    : Date.now();
+}
+
+function logRouterPerf(stage, data = {}) {
+  if (!ROUTER_PERF_DEBUG) {
+    return;
+  }
+  try {
+    console.info(`[router-perf] ${stage}`, data);
+  } catch (_) {}
+}
+
+const NON_BACKSTACK_ROUTES = new Set([
+  "profileSelection",
+  "authQrSignIn",
+  "authSignIn",
+  "serverConnection",
+  "syncCode",
+  "experienceModeSelection",
+  "essentialAddonSetup"
+]);
+const WEBOS_RESUME_ROUTE_KEY = "webos_last_resume_route";
+const WEBOS_RESUME_ROUTE_TTL_MS = 20 * 60 * 1000;
+const TIZEN_ROUTE_RETURN_BACK_GUARD_MS = 700;
+const WEBOS_NON_RESTORABLE_ROUTES = new Set([
+  ...NON_BACKSTACK_ROUTES,
+  "debugConsole",
+  "plugin",
+  "plugins",
+  "catalogOrder",
+  "detail",
+  "player",
+  "stream"
+]);
+
+// Lazy routes. Registered synchronously at module-evaluation time so the route
+// map is fully populated before anything can read it. Stage 1b replaces the
+// behaviour-neutral resolver with the real one: the screen now lives in a
+// separate script that is fetched on demand, and `playerScreen.js` is no longer
+// part of this bundle's module graph.
+const LAZY_ROUTE_DEFINITIONS = SCREEN_CHUNK_MANIFEST.flatMap(entry =>
+  Object.keys(entry.routes).map(route => ({route, chunk:entry.id, resolve:async () => {
+    const loaded = await loadScreenChunk(entry.id);
+    return loaded?.[entry.routes[route]] || null;
+  }})));
+
+
+LAZY_ROUTE_DEFINITIONS.forEach((definition) => {
+  LazyRouteRegistry.register(definition.route, definition);
+});
+
+function getStackEntryRoute(entry) {
+  return typeof entry === "string" ? entry : String(entry?.route || "");
+}
+
+function getStackEntryParams(entry) {
+  return typeof entry === "string" ? {} : entry?.params || {};
+}
+
+function showMountFailurePanel(routeName, error) {
+  try {
+    const existing = document.getElementById("nuvio-mount-failure");
+    if (existing) {
+      existing.parentNode.removeChild(existing);
+    }
+    const panel = document.createElement("div");
+    panel.id = "nuvio-mount-failure";
+    panel.setAttribute(
+      "style",
+      "position:fixed;top:0;right:0;bottom:0;left:0;z-index:99999;" +
+        "background:#101216;color:#f3f5f8;font-family:sans-serif;" +
+        "display:flex;flex-direction:column;align-items:center;justify-content:center;" +
+        "padding:48px;text-align:center;"
+    );
+    const titulo = document.createElement("div");
+    titulo.setAttribute("style", "font-size:34px;font-weight:700;margin-bottom:18px;");
+    titulo.textContent = "Something broke while opening this screen";
+    const rota = document.createElement("div");
+    rota.setAttribute("style", "font-size:22px;opacity:0.75;margin-bottom:14px;");
+    rota.textContent = "Screen: " + String(routeName || "?");
+    const detalhe = document.createElement("div");
+    detalhe.setAttribute(
+      "style",
+      "font-size:20px;max-width:1100px;word-break:break-word;opacity:0.9;margin-bottom:26px;"
+    );
+    detalhe.textContent = String((error && error.message) || error || "unknown error").slice(
+      0,
+      400
+    );
+    const dica = document.createElement("div");
+    dica.setAttribute("style", "font-size:19px;opacity:0.6;");
+    dica.textContent =
+      "Please screenshot this and report it. Full log: Settings > About > Debug console. Press BACK to dismiss.";
+    panel.appendChild(titulo);
+    panel.appendChild(rota);
+    panel.appendChild(detalhe);
+    panel.appendChild(dica);
+    document.body.appendChild(panel);
+    const fechar = function (event) {
+      const code = Number((event && event.keyCode) || 0);
+      // 461 = Back do controle LG; 8/27 cobrem teclado.
+      if (code === 461 || code === 8 || code === 27) {
+        if (panel.parentNode) {
+          panel.parentNode.removeChild(panel);
+        }
+        window.removeEventListener("keydown", fechar, true);
+        if (event && typeof event.stopPropagation === "function") {
+          event.stopPropagation();
+        }
+      }
+    };
+    // Em `window` e nao em `document`: verificado no aparelho que o handler de
+    // teclado do app, registrado antes em `document`, consumia o Back (461) e o
+    // painel nunca fechava. A captura em window dispara antes de qualquer
+    // listener de document.
+    window.addEventListener("keydown", fechar, true);
+  } catch (_) {
+    // O painel e melhor-esforco: se o DOM estiver inutilizavel, nada a fazer.
+  }
+}
+
+export const Router = {
+  current: null,
+  currentParams: {},
+  stack: [],
+  historyInitialized: false,
+  webOsHomeBackGuardInitialized: false,
+  popstateBound: false,
+  suppressPopstateUntil: 0,
+  skipConsumeNextPopstate: false,
+  ignoreNextPopstate: false,
+  routeReturnBackGuardActive: false,
+  routeReturnBackGuardUntil: 0,
+  routeReturnBackGuardNavigationId: 0,
+  pendingHistoryReturn: null,
+  pendingPostPlayNavigation: null,
+
+  routes: {
+    home: HomeScreen,
+    player: LazyRouteRegistry.getStub("player"),
+    account: AccountScreen,
+    authQrSignIn: AuthQrSignInScreen,
+    authSignIn: AuthSignInScreen,
+    serverConnection: ServerConnectionScreen,
+    syncCode: SyncCodeScreen,
+    profileSelection: ProfileSelectionScreen,
+    experienceModeSelection: ExperienceModeSelectionScreen,
+    essentialAddonSetup: EssentialAddonSetupScreen,
+    detail: LazyRouteRegistry.getStub("detail"),
+    library: LibraryScreen,
+    search: LazyRouteRegistry.getStub("search"),
+    discover: LazyRouteRegistry.getStub("discover"),
+    settings: LazyRouteRegistry.getStub("settings"),
+    debugConsole: ConsoleDebugScreen,
+    trakt: LazyRouteRegistry.getStub("trakt"),
+    supportersContributors: LazyRouteRegistry.getStub("supportersContributors"),
+    licensesAttributions: LicensesAttributionsScreen,
+    plugin: PluginScreen,
+    plugins: PluginsScreen,
+    catalogOrder: CatalogOrderScreen,
+    stream: LazyRouteRegistry.getStub("stream"),
+    castDetail: CastDetailScreen,
+    catalogSeeAll: CatalogSeeAllScreen,
+    tmdbEntityBrowse: TmdbEntityBrowseScreen,
+    folderDetail: FolderDetailScreen
+  },
+
+  getRouteStateKey(routeName, params = {}, profileId = ProfileManager.getActiveProfileId()) {
+    const screen = this.routes[routeName];
+    if (!screen?.getRouteStateKey) {
+      return null;
+    }
+    try {
+      const key = screen.getRouteStateKey(params || {});
+      return key && supportsUj630Performance() ? `uj630:${String(profileId || "1")}:${key}` : key;
+    } catch (error) {
+      console.warn("Failed to resolve route state key", routeName, error);
+      return null;
+    }
+  },
+
+  reconcileUj630HistoryStack(routeName, params = {}) {
+    if (!supportsUj630Performance()) return;
+    if (routeName === "home" || NON_BACKSTACK_ROUTES.has(routeName)) {
+      this.stack.length = 0;
+      return;
+    }
+    const targetKey = this.getRouteStateKey(routeName, params);
+    for (let index = this.stack.length - 1; index >= 0; index--) {
+      const entry = this.stack[index];
+      if (getStackEntryRoute(entry) !== routeName) continue;
+      if (targetKey && this.getRouteStateKey(routeName, getStackEntryParams(entry)) !== targetKey) continue;
+      this.stack.splice(index);
+      return;
+    }
+  },
+
+  captureCurrentRouteState() {
+    if (!this.current) {
+      return;
+    }
+    const screen = this.routes[this.current];
+    if (!screen?.captureRouteState) {
+      return;
+    }
+    const key = this.getRouteStateKey(this.current, this.currentParams, this.currentProfileId);
+    if (!key) {
+      return;
+    }
+    try {
+      RouteStateStore.set(key, screen.captureRouteState());
+    } catch (error) {
+      console.warn("Failed to capture route state", this.current, error);
+    }
+  },
+
+  resolveNavigationContext(routeName, params = {}, options = {}) {
+    const screen = this.routes[routeName];
+    const key = this.getRouteStateKey(routeName, params);
+    const shouldClear = Boolean(screen?.clearRouteStateOnMount?.(params || {}));
+    if (shouldClear && key) {
+      RouteStateStore.clear(key);
+    }
+    return {
+      restoredState: !shouldClear && key ? RouteStateStore.get(key) : null,
+      routeStateKey: key,
+      fromHistory: Boolean(options?.fromHistory),
+      isBackNavigation: Boolean(options?.isBackNavigation),
+      previousRoute: String(options?.previousRoute || "")
+    };
+  },
+
+  async consumePendingHistoryReturn(state = null) {
+    const pending = this.pendingHistoryReturn;
+    if (!pending) {
+      return false;
+    }
+
+    this.pendingHistoryReturn = null;
+    // This history traversal is the transition we explicitly requested. Any
+    // stale one-shot/timed suppression belongs to a previous event and must not
+    // swallow the route that Android would have revealed with popBackStack().
+    this.ignoreNextPopstate = false;
+    this.suppressPopstateUntil = 0;
+
+    const targetStackIndex = Number.isInteger(pending.targetStackIndex)
+      ? pending.targetStackIndex
+      : this.stack.length - 1;
+    const stackEntry = this.stack[targetStackIndex];
+    const stackMatches =
+      this.stack.length === Number(pending.stackLength) &&
+      targetStackIndex >= 0 &&
+      getStackEntryRoute(stackEntry) === pending.route &&
+      (!pending.stackEntry || stackEntry === pending.stackEntry);
+    const routeMatches = state?.route === pending.route;
+    const sourceMatches = this.current === pending.sourceRoute;
+
+    if (sourceMatches && stackMatches && routeMatches) {
+      this.stack.splice(targetStackIndex);
+      const targetParams =
+        state?.params && typeof state.params === "object"
+          ? state.params
+          : getStackEntryParams(stackEntry) || pending.params;
+      await this.navigate(pending.route, targetParams, {
+        fromHistory: true,
+        skipStackPush: true,
+        isBackNavigation: true
+      });
+      return true;
+    }
+
+    if (sourceMatches && stackMatches && !state?.route) {
+      // A few TV browser builds can emit a null state when the app reaches the
+      // first history entry. Keep the requested Android destination instead of
+      // allowing the generic no-state path to jump to Home.
+      this.stack.splice(targetStackIndex);
+      await this.navigate(pending.route, getStackEntryParams(stackEntry) || pending.params, {
+        skipStackPush: true,
+        replaceHistory: true,
+        isBackNavigation: true
+      });
+      return true;
+    }
+
+    if (sourceMatches) {
+      // The browser has still completed the one Back traversal, but the route
+      // stack changed before its popstate arrived. Let the browser state be
+      // authoritative while preventing the old screen from consuming the
+      // same event as a second Back request.
+      this.skipConsumeNextPopstate = true;
+    }
+    return false;
+  },
+
+  restoreCurrentHistoryState(previousState = null) {
+    if (!window?.history) {
+      return;
+    }
+    const hasPreviousRouteMetadata = Object.prototype.hasOwnProperty.call(
+      previousState || {},
+      "previousRoute"
+    );
+    const currentState = {
+      route: this.current,
+      params: this.currentParams,
+      previousRoute: hasPreviousRouteMetadata
+        ? previousState.previousRoute || null
+        : previousState?.route === this.current
+          ? null
+          : previousState?.route || null
+    };
+    if (
+      previousState?.route === currentState.route &&
+      typeof window.history.replaceState === "function"
+    ) {
+      // The browser already points at this route. Replace only the params so a
+      // duplicate popstate does not append another identical history entry.
+      window.history.replaceState(currentState, "");
+      return;
+    }
+    if (typeof window.history.pushState === "function") {
+      // A real late Back moved to an older route. Push the restored current
+      // route so the older entry remains reachable on the next Back.
+      window.history.pushState(currentState, "");
+    }
+  },
+
+  init() {
+    if (this.popstateBound) {
+      return;
+    }
+    this.popstateBound = true;
+    window.addEventListener("popstate", async (event) => {
+      const state = event?.state || null;
+      if (await this.consumePendingHistoryReturn(state)) {
+        return;
+      }
+      if (await this.consumePendingPostPlayNavigation(state)) {
+        return;
+      }
+      if (this.ignoreNextPopstate) {
+        this.ignoreNextPopstate = false;
+        return;
+      }
+      if (Date.now() < Number(this.suppressPopstateUntil || 0)) {
+        this.restoreCurrentHistoryState(state);
+        return;
+      }
+      if (this.consumeRouteReturnBackGuard()) {
+        // A physical Tizen Back can also move browser history after its key
+        // event has already completed an in-app route return. Keep that late
+        // popstate on the restored screen instead of letting Home consume it
+        // as a second Back and open the sidebar.
+        this.restoreCurrentHistoryState(state);
+        return;
+      }
+      if (Platform.isTizen() && this.current === "home" && state?.route === "home") {
+        // A native history event can arrive after the timed route-return guard
+        // has expired. Home is already restored, so forwarding this redundant
+        // transition would make Home consume it as another Back and open the
+        // sidebar.
+        return;
+      }
+      const shouldSkipConsume = Boolean(this.skipConsumeNextPopstate);
+      this.skipConsumeNextPopstate = false;
+      const currentScreen = this.getCurrentScreen();
+      const shouldLetPlayerReturnToStream =
+        this.current === "player" &&
+        state?.route === "stream" &&
+        currentScreen?.shouldReturnToStreamOnBack?.() !== false &&
+        !currentScreen?.hasBackDismissableOverlay?.();
+      const consumeResult =
+        !shouldSkipConsume && !shouldLetPlayerReturnToStream
+          ? currentScreen?.consumeBackRequest?.()
+          : false;
+      if (consumeResult) {
+        if (consumeResult !== "history") {
+          this.restoreCurrentHistoryState(state);
+        }
+        return;
+      }
+      if (this.current === "home" && (!state?.route || NON_BACKSTACK_ROUTES.has(state.route))) {
+        Platform.exitApp();
+        return;
+      }
+      if (state?.route && this.routes[state.route]) {
+        await this.navigate(state.route, state.params || {}, {
+          fromHistory: true,
+          skipStackPush: true,
+          reconcileBackstack: true,
+          isBackNavigation: true
+        });
+        return;
+      }
+      if (this.current && this.current !== "home" && this.routes.home) {
+        await this.navigate(
+          "home",
+          {},
+          {
+            fromHistory: true,
+            skipStackPush: true,
+            isBackNavigation: true
+          }
+        );
+      }
+    });
+  },
+
+  suppressNextPopstate(durationMs = 700) {
+    this.suppressPopstateUntil = Math.max(
+      Number(this.suppressPopstateUntil || 0),
+      Date.now() + Math.max(0, Number(durationMs || 0))
+    );
+  },
+
+  ignoreSinglePopstate() {
+    this.ignoreNextPopstate = true;
+  },
+
+  popToExistingRoute(routeName, fallbackParams = {}, options = {}) {
+    const targetRoute = String(routeName || "").trim();
+    if (!targetRoute || !this.routes[targetRoute] || this.current === targetRoute) {
+      return false;
+    }
+
+    const allowSingleIntermediateRoute = Boolean(options?.allowSingleIntermediateRoute);
+
+    if (this.pendingHistoryReturn) {
+      return this.pendingHistoryReturn.route === targetRoute;
+    }
+
+    if (!this.historyInitialized || !window?.history) {
+      return false;
+    }
+
+    const currentHistoryRoute = String(window.history.state?.route || "");
+    if (currentHistoryRoute && currentHistoryRoute !== this.current) {
+      // The current route is still mounting and has not written its browser
+      // entry yet. Traversing history here would pop the caller's route instead
+      // of the Player/Stream entry; let the conservative replacement path
+      // finish the pending navigation first.
+      return false;
+    }
+
+    const topStackIndex = this.stack.length - 1;
+    const topStackRoute = getStackEntryRoute(this.stack[topStackIndex]);
+    const targetStackIndex =
+      topStackRoute === targetRoute
+        ? topStackIndex
+        : allowSingleIntermediateRoute && topStackIndex > 0
+          ? topStackIndex - 1
+          : -1;
+    if (targetStackIndex < 0) {
+      return false;
+    }
+
+    const stackEntry = this.stack[targetStackIndex];
+    if (getStackEntryRoute(stackEntry) !== targetRoute) {
+      return false;
+    }
+
+    if (allowSingleIntermediateRoute && targetRoute === "detail") {
+      const targetItemId = String(fallbackParams?.itemId || "").trim();
+      const targetItemType = String(fallbackParams?.itemType || "")
+        .trim()
+        .toLowerCase();
+      const stackParams = getStackEntryParams(stackEntry);
+      const stackItemId = String(stackParams?.itemId || "").trim();
+      const stackItemType = String(stackParams?.itemType || "")
+        .trim()
+        .toLowerCase();
+      if (
+        (targetItemId && stackItemId !== targetItemId) ||
+        (targetItemType && stackItemType && stackItemType !== targetItemType)
+      ) {
+        return false;
+      }
+    }
+
+    const historySteps = this.stack.length - targetStackIndex;
+    if (historySteps > 1 && !allowSingleIntermediateRoute) {
+      return false;
+    }
+    if (
+      (historySteps === 1 && typeof window.history.back !== "function") ||
+      (historySteps > 1 && typeof window.history.go !== "function")
+    ) {
+      return false;
+    }
+
+    const previousHistoryRoute = String(window.history.state?.previousRoute || "");
+    const expectedPreviousRoute = historySteps === 1 ? targetRoute : topStackRoute;
+    if (previousHistoryRoute && previousHistoryRoute !== expectedPreviousRoute) {
+      // The explicit history predecessor prevents treating a stale stack entry
+      // as the Android destination. For the natural-end path, one Sources
+      // entry may sit between Player and the existing Detail.
+      return false;
+    }
+
+    this.pendingHistoryReturn = {
+      route: targetRoute,
+      params: fallbackParams && typeof fallbackParams === "object" ? fallbackParams : {},
+      sourceRoute: this.current,
+      stackLength: this.stack.length,
+      stackEntry,
+      targetStackIndex,
+      requestedAt: Date.now()
+    };
+
+    try {
+      if (historySteps === 1) {
+        window.history.back();
+      } else {
+        window.history.go(-historySteps);
+      }
+      return true;
+    } catch (error) {
+      this.pendingHistoryReturn = null;
+      console.warn("Failed to return to existing route", targetRoute, error);
+      return false;
+    }
+  },
+
+  beginRouteReturnBackGuard(isBackNavigation = false) {
+    this.routeReturnBackGuardNavigationId += 1;
+    const navigationId = this.routeReturnBackGuardNavigationId;
+    const shouldGuard = Platform.isTizen() && Boolean(isBackNavigation);
+    this.routeReturnBackGuardActive = shouldGuard;
+    this.routeReturnBackGuardUntil = shouldGuard ? Number.POSITIVE_INFINITY : 0;
+    return navigationId;
+  },
+
+  completeRouteReturnBackGuard(navigationId) {
+    if (
+      navigationId !== this.routeReturnBackGuardNavigationId ||
+      !this.routeReturnBackGuardActive
+    ) {
+      return;
+    }
+    this.routeReturnBackGuardUntil = Date.now() + TIZEN_ROUTE_RETURN_BACK_GUARD_MS;
+  },
+
+  cancelRouteReturnBackGuard(navigationId) {
+    // The guard is armed before the target screen is loaded, so a failed load
+    // would otherwise leave it armed forever (its `until` is +Infinity until
+    // the navigation completes) and swallow every subsequent Back - a dead end.
+    if (navigationId !== this.routeReturnBackGuardNavigationId) {
+      return;
+    }
+    this.routeReturnBackGuardActive = false;
+    this.routeReturnBackGuardUntil = 0;
+  },
+
+  consumeRouteReturnBackGuard() {
+    if (
+      !this.routeReturnBackGuardActive ||
+      Date.now() >= Number(this.routeReturnBackGuardUntil || 0)
+    ) {
+      this.routeReturnBackGuardActive = false;
+      this.routeReturnBackGuardUntil = 0;
+      return false;
+    }
+    // Treat this as a short guard window, not a one-shot flag. Samsung can
+    // report one physical Back through more than one key/history event; all
+    // copies that reach the newly restored route must be consumed.
+    return true;
+  },
+
+  isWebOsResumeRouteRestorable(routeName = this.current) {
+    const route = String(routeName || "").trim();
+    return Boolean(route && this.routes[route] && !WEBOS_NON_RESTORABLE_ROUTES.has(route));
+  },
+
+  persistWebOsResumeRoute(routeName = this.current, params = this.currentParams) {
+    if (!Platform.isWebOS()) {
+      return;
+    }
+    const route = String(routeName || "").trim();
+    if (!this.isWebOsResumeRouteRestorable(route)) {
+      LocalStore.remove(WEBOS_RESUME_ROUTE_KEY);
+      return;
+    }
+    try {
+      LocalStore.set(WEBOS_RESUME_ROUTE_KEY, {
+        route,
+        params: params || {},
+        savedAt: Date.now()
+      });
+    } catch (error) {
+      console.warn("Failed to persist webOS resume route", error);
+    }
+  },
+
+  consumeWebOsResumeRoute() {
+    if (!Platform.isWebOS()) {
+      return null;
+    }
+    const snapshot = LocalStore.get(WEBOS_RESUME_ROUTE_KEY, null);
+    if (!snapshot || typeof snapshot !== "object") {
+      return null;
+    }
+    const route = String(snapshot.route || "").trim();
+    const savedAt = Number(snapshot.savedAt || 0);
+    if (
+      !route ||
+      !this.isWebOsResumeRouteRestorable(route) ||
+      !Number.isFinite(savedAt) ||
+      Date.now() - savedAt > WEBOS_RESUME_ROUTE_TTL_MS
+    ) {
+      LocalStore.remove(WEBOS_RESUME_ROUTE_KEY);
+      return null;
+    }
+    return {
+      route,
+      params: snapshot.params && typeof snapshot.params === "object" ? snapshot.params : {}
+    };
+  },
+
+  // Synchronous fast path for every non-lazy route: returns the boolean `true`
+  // rather than a promise, so the hot path never pays for a microtask tick.
+  // Only a genuinely unloaded lazy route returns a promise.
+  ensureRouteLoaded(routeName) {
+    if (!LazyRouteRegistry.isLazy(routeName)) {
+      return true;
+    }
+    if (LazyRouteRegistry.isLoaded(routeName)) {
+      this.routes[routeName] = LazyRouteRegistry.getLoaded(routeName);
+      return true;
+    }
+    // Only a genuinely cold load can be slow enough to need feedback; the
+    // indicator itself is delayed so the warm case never flashes.
+    if (!isScreenChunkLoaded(LazyRouteRegistry.getStub(routeName)?.__chunk || routeName)) {
+      beginChunkLoadingIndicator();
+    }
+    return LazyRouteRegistry.load(routeName).then((screen) => {
+      if (!screen) {
+        // Never a dead end: the caller leaves `current`, `currentParams` and
+        // `stack` untouched, so the previous screen stays mounted and
+        // focusable and pressing the same key again retries the load.
+        reportChunkLoadFailure();
+        return false;
+      }
+      endChunkLoadingIndicator();
+      // Swap the stub for the real screen so every synchronous contract
+      // (route state key, capture, cleanup, getCurrentScreen) sees the real
+      // implementation from now on.
+      this.routes[routeName] = screen;
+      return true;
+    });
+  },
+
+  async navigate(routeName, params = {}, options = {}) {
+    if (routeName === "plugins" && Platform.isTizen() && !TizenCapabilities.canUsePlugins()) {
+      return;
+    }
+    const navigationStart = ROUTER_PERF_DEBUG ? routerPerfNow() : 0;
+
+    const fromHistory = Boolean(options?.fromHistory);
+    const skipStackPush = Boolean(options?.skipStackPush);
+    const replaceHistory = Boolean(options?.replaceHistory);
+    const targetParams = params || {};
+    const routeReturnBackGuardNavigationId = this.beginRouteReturnBackGuard(
+      options?.isBackNavigation
+    );
+
+    let Screen = this.routes[routeName];
+
+    if (!Screen) {
+      console.error("Route not found:", routeName);
+      return;
+    }
+
+    // Load before anything is mutated: capture, context resolution and cleanup
+    // below are all synchronous contracts that must see the real screen. On
+    // failure nothing has changed yet - `current`, `currentParams` and `stack`
+    // are untouched - but the back guard armed above must be released.
+    const routeLoad = this.ensureRouteLoaded(routeName);
+    if (routeLoad !== true && !(await routeLoad)) {
+      this.cancelRouteReturnBackGuard(routeReturnBackGuardNavigationId);
+      return;
+    }
+    Screen = this.routes[routeName];
+    if (options?.reconcileBackstack || NON_BACKSTACK_ROUTES.has(routeName)) {
+      this.reconcileUj630HistoryStack(routeName, targetParams);
+    }
+
+    const bootGuard = globalThis.NuvioBootGuard;
+    if (bootGuard && typeof bootGuard.stage === "function") {
+      bootGuard.stage(`Opening ${routeName} screen`);
+    }
+
+    // Cleanup current
+    const previousRoute = this.current;
+    const shouldSkipPush = skipStackPush || NON_BACKSTACK_ROUTES.has(previousRoute);
+    if (this.current && this.current !== routeName) {
+      this.captureCurrentRouteState();
+      this.routes[this.current]?.cleanup?.();
+      if (!shouldSkipPush) {
+        this.stack.push({
+          route: this.current,
+          params: this.currentParams || {}
+        });
+      }
+    } else if (this.current === routeName) {
+      this.captureCurrentRouteState();
+      this.routes[this.current]?.cleanup?.();
+    }
+
+    this.current = routeName;
+    this.currentProfileId = ProfileManager.getActiveProfileId();
+    setUj630ActivityRoute(routeName);
+    setUj630BrowseStyleRoute(routeName);
+    this.currentParams = targetParams;
+    const navigationContext = this.resolveNavigationContext(routeName, this.currentParams, {
+      ...options,
+      previousRoute
+    });
+
+    try {
+      await Screen.mount(this.currentParams, navigationContext);
+    } catch (error) {
+      // Um mount que lanca sempre terminava invisivel: a tela anterior ja saiu,
+      // a nova nao entrou, e o erro ou morria num console.warn de algum chamador
+      // ou virava rejeicao nao tratada. Tres relatos reais nasceram disso — a
+      // home em branco deste fork, o "PIN travado" do primeiro testador de
+      // webOS 3 e a tela preta apos login por QR (webOS 4.10, mesma versao onde
+      // o app funciona; so o caminho de login fresco quebrava, que sessao
+      // persistente nunca exercita).
+      //
+      // O painel e DOM puro com estilo inline de proposito: precisa aparecer
+      // mesmo quando o CSS do app esta quebrado ou a tela nem montou.
+      showMountFailurePanel(routeName, error);
+      throw error;
+    }
+    this.completeRouteReturnBackGuard(routeReturnBackGuardNavigationId);
+    logRouterPerf("navigate", {
+      ms: Number((routerPerfNow() - navigationStart).toFixed(2)),
+      route: routeName,
+      previousRoute,
+      fromHistory,
+      skipStackPush,
+      replaceHistory
+    });
+
+    // If another navigation happened while this screen was mounting, this
+    // navigation is stale and must not write an extra history entry.
+    if (this.current !== routeName || this.currentParams !== targetParams) {
+      return;
+    }
+
+    if (bootGuard && typeof bootGuard.ready === "function") {
+      bootGuard.ready();
+    }
+
+    if (window?.history && typeof window.history.pushState === "function") {
+      const state = {
+        route: this.current,
+        params: this.currentParams,
+        previousRoute: previousRoute || null
+      };
+      if (!this.historyInitialized) {
+        window.history.replaceState(state, "");
+        this.historyInitialized = true;
+      } else if (!fromHistory) {
+        if (replaceHistory || NON_BACKSTACK_ROUTES.has(previousRoute)) {
+          window.history.replaceState(state, "");
+        } else {
+          window.history.pushState(state, "");
+        }
+      }
+      // webOS handles the remote Back button through the History API by
+      // default. Keep one Home entry available so overlays can consume Back
+      // before the platform treats it as a request to exit the app.
+      if (
+        Platform.isWebOS() &&
+        (this.current === "home" || this.current === "profileSelection") &&
+        !this.webOsHomeBackGuardInitialized
+      ) {
+        window.history.pushState(state, "");
+        this.webOsHomeBackGuardInitialized = true;
+      }
+    }
+    this.persistWebOsResumeRoute(this.current, this.currentParams);
+  },
+
+  navigateFromPostPlayRecommendation(routeName, params = {}, options = {}) {
+    const targetRoute = String(routeName || "").trim();
+    if (!targetRoute || !this.routes[targetRoute]) {
+      return false;
+    }
+
+    // Android removes the current Player and, when Player was opened from a
+    // Stream destination, removes that Stream destination as the pop-up root
+    // before pushing the recommendation Detail. The Router keeps the current
+    // route out of `stack`, so compact both the logical stack and browser
+    // history before mounting the new route.
+    if (this.current !== "player") {
+      void this.navigate(targetRoute, params, options);
+      return true;
+    }
+
+    const topStackIndex = this.stack.length - 1;
+    const topStackRoute = getStackEntryRoute(this.stack[topStackIndex]);
+    const removesStreamRoot = topStackRoute === "stream";
+    const historySteps = topStackRoute ? (removesStreamRoot ? 2 : 1) : 0;
+    if (removesStreamRoot) {
+      this.stack.pop();
+    }
+
+    const navigateOptions = {
+      ...options,
+      skipStackPush: true,
+      replaceHistory: true
+    };
+
+    if (
+      historySteps > 0 &&
+      this.historyInitialized &&
+      window?.history &&
+      typeof window.history.go === "function" &&
+      String(window.history.state?.route || "") === "player"
+    ) {
+      this.pendingPostPlayNavigation = {
+        route: targetRoute,
+        params: params && typeof params === "object" ? params : {},
+        // We are already positioned on the retained stack root after
+        // history.go(); a normal pushState creates the new Detail entry and
+        // truncates the obsolete Player/Stream forward entries.
+        options: { ...navigateOptions, replaceHistory: false },
+        sourceRoute: "player",
+        expectedRoute: getStackEntryRoute(this.stack[this.stack.length - 1]),
+        requestedAt: Date.now()
+      };
+      try {
+        window.history.go(-historySteps);
+        return true;
+      } catch (error) {
+        this.pendingPostPlayNavigation = null;
+        console.warn("Failed to compact post-play browser history", error);
+      }
+    }
+
+    void this.navigate(targetRoute, params, navigateOptions);
+    return true;
+  },
+
+  async consumePendingPostPlayNavigation(state = null) {
+    const pending = this.pendingPostPlayNavigation;
+    if (!pending) {
+      return false;
+    }
+    this.pendingPostPlayNavigation = null;
+    if (this.current !== pending.sourceRoute) {
+      return false;
+    }
+
+    // A successful traversal lands on the route immediately before the
+    // Android pop-up root. Do not mount that intermediate route: push the
+    // recommendation directly, which truncates the old forward entries.
+    if (
+      pending.expectedRoute &&
+      String(state?.route || "") &&
+      String(state.route) !== pending.expectedRoute
+    ) {
+      console.warn("Post-play history target differed from the logical stack", {
+        expected: pending.expectedRoute,
+        actual: state.route
+      });
+    }
+    await this.navigate(pending.route, pending.params, pending.options);
+    return true;
+  },
+
+  async backFromPendingNavigation() {
+    // The current history entry still represents the caller until mount completes.
+    // Restore that entry in place so a fast Back neither skips it nor records a stale route.
+    const historyState = window?.history?.state || null;
+    const targetRoute = String(historyState?.route || "");
+
+    if (targetRoute && this.routes[targetRoute]) {
+      const previous = this.stack[this.stack.length - 1];
+      const previousRoute = typeof previous === "string" ? previous : previous?.route;
+      if (previousRoute === targetRoute) {
+        this.stack.pop();
+      }
+      await this.navigate(targetRoute, historyState.params || {}, {
+        fromHistory: true,
+        skipStackPush: true,
+        isBackNavigation: true
+      });
+      return;
+    }
+
+    await this.back({ skipConsume: true, skipHistory: true });
+  },
+
+  async back(options = {}) {
+    if (this.pendingHistoryReturn || this.pendingPostPlayNavigation) {
+      return;
+    }
+
+    const currentScreen = this.getCurrentScreen();
+    const consumeResult = !options?.skipConsume ? currentScreen?.consumeBackRequest?.() : false;
+    if (consumeResult) {
+      if (consumeResult !== "history") {
+        this.suppressNextPopstate();
+      }
+      return;
+    }
+
+    if (this.current === "home") {
+      Platform.exitApp();
+      return;
+    }
+
+    if (
+      !options?.skipHistory &&
+      window?.history &&
+      typeof window.history.back === "function" &&
+      this.historyInitialized
+    ) {
+      if (options?.skipConsume) {
+        this.skipConsumeNextPopstate = true;
+      }
+      window.history.back();
+      return;
+    }
+
+    if (this.stack.length === 0) {
+      if (this.current && this.current !== "home" && this.routes.home) {
+        const previousRoute = this.current;
+        this.routes[this.current]?.cleanup?.();
+        this.current = "home";
+        this.currentProfileId = ProfileManager.getActiveProfileId();
+        setUj630ActivityRoute("home");
+        setUj630BrowseStyleRoute("home");
+        this.currentParams = {};
+        await this.routes.home.mount(
+          {},
+          {
+            isBackNavigation: true,
+            previousRoute
+          }
+        );
+        this.persistWebOsResumeRoute("home", {});
+        return;
+      }
+
+      Platform.exitApp();
+      return;
+    }
+
+    const previous = this.stack.pop();
+    const previousRoute = getStackEntryRoute(previous);
+    const previousParams = getStackEntryParams(previous);
+
+    if (!previousRoute || !this.routes[previousRoute]) {
+      return;
+    }
+
+    const previousRouteLoad = this.ensureRouteLoaded(previousRoute);
+    if (previousRouteLoad !== true && !(await previousRouteLoad)) {
+      // Leave `current`, `currentParams` and the (already popped) target alone
+      // rather than half-completing the return.
+      this.stack.push(previous);
+      return;
+    }
+
+    const fromRoute = this.current;
+    this.captureCurrentRouteState();
+    this.routes[this.current]?.cleanup?.();
+    this.current = previousRoute;
+    this.currentProfileId = ProfileManager.getActiveProfileId();
+    setUj630ActivityRoute(previousRoute);
+    setUj630BrowseStyleRoute(previousRoute);
+    this.currentParams = previousParams;
+    const navigationContext = this.resolveNavigationContext(previousRoute, previousParams, {
+      isBackNavigation: true,
+      previousRoute: fromRoute
+    });
+
+    await this.routes[previousRoute].mount(previousParams, navigationContext);
+    this.persistWebOsResumeRoute(this.current, this.currentParams);
+  },
+
+  getCurrent() {
+    return this.current;
+  },
+
+  getCurrentScreen() {
+    if (!this.current) {
+      return null;
+    }
+    const screen = this.routes[this.current] || null;
+    // Belt and braces: a stub must never reach the focus engine. It has no key
+    // handlers, so returning it would silently swallow every remote keypress
+    // and pointer event - a completely dead remote. focusEngine and
+    // sidebarNavigation both null-check already.
+    if (screen?.__lazyRoute) {
+      return null;
+    }
+    return screen;
+  }
+};

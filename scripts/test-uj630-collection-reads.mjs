@@ -1,0 +1,20 @@
+import fs from'node:fs';import vm from'node:vm';import assert from'node:assert/strict';
+const read=p=>fs.readFileSync(new URL('../js/'+p,import.meta.url),'utf8').replace(/^import .*;\n/gm,'').replace(/export /g,'');
+const data=new Map();let profile='1';const context={stringifyStoredData:JSON.stringify,assertUj630CollectionWriteAllowed:()=>{},Map,Set,JSON,Array,Math,Number,String,Boolean,Date,setTimeout,clearTimeout,localStorage:{getItem:k=>data.get(k)||null},LocalStore:{get:(k,d)=>data.has(k)?JSON.parse(data.get(k)):d,set:(k,v)=>data.set(k,JSON.stringify(v))},ProfileManager:{getActiveProfileId:()=>profile},registerSessionTeardownHandler(){},getSyncBackoffRemainingMs:()=>0};
+const create=vm.runInNewContext(read('data/local/profileScopedStore.js')+';createProfileScopedStore;',context);
+let normalizedSourceCount=null;
+const tracedCreate=options=>{const normalize=options.normalize;return create({...options,normalize(value){normalizedSourceCount=(value.collections||[]).reduce((n,c)=>n+(c.folders||[]).reduce((m,f)=>m+(f.sources||[]).length,0),0);return normalize(value)}})};
+const collectionsSource=read('data/local/collectionsStore.js');const store=vm.runInNewContext(collectionsSource+';CollectionsStore;',{...context,createProfileScopedStore:tracedCreate});
+const collection={id:'c',title:'Discover',folders:[{id:'f',title:'Films',coverImageUrl:'https://example.test/cover.jpg',sources:[{provider:'addon',addonId:'a',type:'movie',catalogId:'all',addonBaseUrl:'https://example.test/addon'}]},{id:'other',title:'Other',sources:[]}]};
+store.replaceForProfile('1',[collection],{silentSync:true});store.replaceForProfile('2',[{...collection,title:'Second profile'}],{silentSync:true});
+const home=store.getHomeSnapshot();assert.equal(normalizedSourceCount,0,'Home must omit provider configurations before normalization and cloning');assert.equal(home[0].folders.length,2);assert.equal(home[0].folders[0].sources,undefined);assert.equal(home[0].folders[0].catalogSources,undefined);
+home[0].folders[0].title='mutated';assert.equal(store.get()[0].folders[0].title,'Films');
+const folder=store.getFolderContext('c','f');assert.equal(normalizedSourceCount,1,'A folder read normalizes only its own provider configuration');assert.equal(folder.collection.folders,undefined);assert.equal(folder.folder.sources.length,1);folder.folder.sources[0].addonId='mutated';assert.equal(store.getFolderContext('c','f').folder.sources[0].addonId,'a');
+profile='2';assert.equal(store.getFolderContext('c','f').collection.title,'Second profile');profile='1';
+let raw=JSON.parse(data.get('collectionsState'));raw.profiles['1'].collections[0].title='Synced';data.set('collectionsState',JSON.stringify(raw));assert.equal(store.getHomeSnapshot()[0].title,'Synced');assert.equal(store.getFolderContext('missing','f').folder,null);
+assert.equal(store.get()[0].folders[0].sources[0].addonId,'a','Projections must never remove or rewrite persisted provider data');
+console.log('PASS narrow collection reads, full sources preserved, defensive copies, profiles and external sync invalidation');
+
+const snapshot=data.get('collectionsState');profile='3';assert.equal(store.getHomeSnapshot()[0].title,'Synced','Uninitialized profile inherits primary read model');assert.equal(data.get('collectionsState'),snapshot,'Read-only projections must not rewrite other profiles or migrate storage');
+profile='1';data.set('collectionsState',JSON.stringify({collections:[collection]}));assert.equal(store.getHomeSnapshot()[0].title,'Discover','Legacy storage is readable without destructive migration');assert(!JSON.parse(data.get('collectionsState')).__profileScoped);
+console.log('PASS selected-profile-only normalization, non-writing reads and legacy envelope support.');

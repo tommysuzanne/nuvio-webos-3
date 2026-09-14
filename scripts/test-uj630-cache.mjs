@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import { Uj630SummaryCache as cache } from '../js/core/media/uj630SummaryCache.js';
+import { compactUj630Catalog,resolveUj630Catalog,Uj630CatalogLoader } from '../js/core/media/uj630CatalogPages.js';
+const items=Array.from({length:1800},(_,i)=>({id:String(i),type:'movie',poster:`p${i}`,name:`Item ${i}`}));
+let loads=0,aborts=0,active=0,max=0;
+const compact=compactUj630Catalog(items,async signal=>{loads++;active++;max=Math.max(max,active);signal.addEventListener('abort',()=>aborts++);await new Promise(r=>setTimeout(r,10));active--;return {status:'success',data:{items}}});
+assert.equal(compact.length,1800);assert.equal(compact[1799].poster,undefined);assert.equal(resolveUj630Catalog(compact[0]).name,'Item 0');
+for(let i=0;i<20;i++)cache.set(`other:${i}`,{items:Array(80).fill({id:'fixture'})});
+assert(cache.stats().summaries<=1000);assert.equal(resolveUj630Catalog(compact[0]),compact[0]);
+let changes=0;const loader=new Uj630CatalogLoader(()=>changes++);
+loader.need(compact[0]);loader.need(compact[1799]);await new Promise(r=>setTimeout(r,40));
+assert.equal(loads,1,'Requests at the same provider cursor are deduplicated');assert.equal(resolveUj630Catalog(compact[1799]).name,'Item 1799');assert.equal(changes,1);assert(cache.stats().summaries<=1000);
+const pages=Array.from({length:4},()=>compactUj630Catalog(items,signal=>new Promise((resolve,reject)=>{signal.addEventListener('abort',()=>{aborts++;reject(Error('abort'))});})));
+pages.forEach(page=>loader.need(page[900]));assert.equal(loader.active,2);await Promise.resolve();loader.dispose();await new Promise(r=>setTimeout(r,10));assert.equal(aborts,2);assert.equal(loader.jobs.size,0);
+console.log('PASS: 1800 reachable identities, 1000-summary shared LRU, evicted cursor reload, deduplication, two requests and real abort on disposal.');

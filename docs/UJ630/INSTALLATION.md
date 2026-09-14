@@ -1,0 +1,50 @@
+# Build and install the 1080p port
+
+Use Node.js 22 LTS, npm and a Unix shell on macOS or Linux. The locked webOS CLI is installed by `npm ci --ignore-scripts`; do not use a floating global CLI to reproduce a build. The services shipped to the TV still target Node 0.12.2, and the UI targets Chromium 38.
+
+## Configuration and build
+
+```sh
+npm ci --ignore-scripts
+npm run build:uj630 -- /absolute/path/to/your-compatible-upstream-webos.ipk
+```
+
+Obtain the compatible package yourself from [the legacy project's releases](https://github.com/iqui27/NuvioTVSmart-legacy-webos/releases). The extraction helper was developed against its webOS3 exp32 layout; another package layout may require adapting the helper. It reads literal runtime configuration, not executable code from the supplied package. Configuration stays in ignored local build files. This does not grant permission to use anyone else's backend or account.
+
+Alternatively copy `local.example.properties` to ignored `local.properties`, supply configuration for a backend you are authorized to use, then run `npm run build:uj630`. Personal MDBList/TMDB keys and addon setup belong in your own application settings, not in Git. Do not commit a configured package, generated runtime configuration, or personal collection export.
+
+The output is `space.nuvio.webos_1.1.2_all.ipk` in the checkout. Check the printed build label and package name before installation. The wrapper fixes the UI at 1920 × 1080. This is independent of the resolution of a movie.
+
+To check the build without backend configuration, run `npm run validate:public`. This makes a **CHECK-ONLY** placeholder package which cannot authenticate; never install or distribute it as a working release. The check refuses to overwrite existing `local.properties`.
+
+## Back up and connect
+
+The package uses **space.nuvio.webos** and replaces an installation with the same ID. Export your own collections, settings, addons and progress before an update, and keep the last working IPK. Store private exports outside the Git checkout. Restoring old code does not mean restoring old progress or collections.
+
+Install LG's Developer Mode app, enable Developer Mode, restart the TV as instructed by LG and enable Key Server when pairing. Use the locally installed webOS tools to add your TV and retrieve its developer key:
+
+```sh
+./node_modules/.bin/ares-setup-device
+./node_modules/.bin/ares-novacom --device lg-tv --getkey
+```
+
+Here `lg-tv` is an example alias; choose your own TV address and alias interactively. Do not put its private key or pairing details in issues. Follow [LG's Developer Mode documentation](https://webostv.developer.lge.com/develop/getting-started/developer-mode-app).
+
+## Update and verify
+
+Close Nuvio before replacing it. A webOS service process can survive a package replacement: close/stop the old Nuvio service through the developer tools and verify that it has exited before launching the new package. If you cannot positively verify this, restart the TV after installation and confirm the new build label. A package filename alone does not prove that the new service is executing.
+
+```sh
+./node_modules/.bin/ares-install --device lg-tv ./space.nuvio.webos_1.1.2_all.ipk
+./node_modules/.bin/ares-launch --device lg-tv space.nuvio.webos
+```
+
+Check the displayed build label, collections, Continue Watching, focus, a folder, a details page and sources. Playback testing requires your own lawful accessible test media. Do not uninstall merely to update, because uninstalling may remove local data. Keep the previous package for recovery; use the same install procedure and verify the running service after rollback.
+
+Developer Mode must remain enabled and its session renewed before expiry. Disabling it removes developer-installed apps under LG's rules. A USB drive is not a permanent installation mechanism. This project does not provide root, firmware changes or permanent installation.
+
+The TV's collections are read-only. Organize them on another client and use **Refresh collections**, or re-enter Home after the five-minute freshness interval. Authentication, progress, playback controls and Continue Watching hides remain available.
+
+## TV diagnostics
+
+The scripts under `scripts/uj630-tv/` are developer diagnostics, not part of CI and not automatic TV setup. Inspect each script's prerequisites before use. Media diagnostics require an explicit `NUVIO_MEDIA_URL` reachable from your TV; the loopback default is a placeholder, not your computer's LAN address. Keep raw diagnostic exports private and publish only sanitized summaries.

@@ -1,0 +1,26 @@
+name: Bug report
+description: Report a reproducible issue in the UJ630 port.
+title: "[Bug] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not attach API keys, configured addon URLs, IPKs, collection exports, account backups or raw private logs.
+        This is the unofficial UJ630 port. Include the build label and reproduce the problem before reporting it.
+  - type: input
+    id: device
+    attributes:
+      label: TV model, firmware and build label
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps, expected result and actual result
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Sanitized evidence and relevant settings
+      description: Remove account identifiers, API keys, configured URLs and personal collection names. Never post a raw account export.

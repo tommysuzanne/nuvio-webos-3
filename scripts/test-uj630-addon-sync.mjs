@@ -1,0 +1,13 @@
+import fs from 'node:fs';import vm from 'node:vm';import assert from 'node:assert/strict';
+let local=['current','old-torrentio','old-frenchio'],profile='1',applied=0,names,enabled;
+const repository={canonicalizeUrl:x=>x,normalizeUrl:x=>x.toLowerCase(),getInstalledAddonUrls:()=>local,getAddonDisplayNameOverride:()=>'',setAddonDisplayNameOverrides:x=>{names=x;applied++},setAddonEnabledStates:x=>{enabled=x},setAddonOrder:async x=>{local=x}};
+const source=fs.readFileSync(new URL('../js/core/profile/librarySyncService.js',import.meta.url),'utf8').replace(/^import .*;\n/gm,'').replace(/export /g,'');
+const context=vm.createContext({console:{warn(){}},addonRepository:repository,ProfileManager:{getActiveProfileId:()=>profile},SupabaseApi:{rpc:async()=>({profiles:{'1':{}},addons:{'1':0}})}});
+vm.runInContext(source,context);const reconcile=vm.runInContext('reconcileFetchedAddonSnapshot',context);
+await reconcile([{url:'current',display_name:'Torrentio',sort_order:2},{url:'frenchio',display_name:'Frenchio',sort_order:1,enabled:false}],1,'1');
+assert.deepEqual(Array.from(local),['frenchio','current']);assert.equal(names[0].name,'Frenchio');assert.equal(enabled[0].enabled,false);
+const prepare=vm.runInContext('prepareRemoteAddonSnapshot',context);
+assert.equal(prepare([]).shouldApply,false);assert.deepEqual(Array.from(local),['frenchio','current'],'Unverified empty snapshots retain local addons');
+await reconcile([],1,'1');assert.deepEqual(Array.from(local),[],'Verified remote deletion is authoritative');
+local=['kept'];profile='2';const before=applied;await reconcile([{url:'stale'}],1,'1');assert.equal(applied,before);assert.deepEqual(local,['kept']);
+console.log('PASS authoritative addon snapshot removes stale entries, keeps remote order/names/enabled states, protects unverified empty lists and rejects old-profile responses.');

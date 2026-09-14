@@ -1,0 +1,9 @@
+import assert from'node:assert/strict';import fs from'node:fs';import vm from'node:vm';import{parse}from'acorn';
+const source=fs.readFileSync(new URL('../js/core/player/playerController.js',import.meta.url),'utf8'),ast=parse(source,{ecmaVersion:'latest',sourceType:'module'});
+const object=ast.body.find(n=>n.type==='ExportNamedDeclaration'&&n.declaration?.declarations?.some(v=>v.id.name==='PlayerController')).declaration.declarations.find(v=>v.id.name==='PlayerController').init;
+let legacy=true,loads=0;const ctx=vm.createContext({supportsUj630Performance:()=>legacy,Platform:{isTizen:()=>false},loadStreamingLibs:async()=>{loads++}});
+function method(name){const prop=object.properties.find(p=>p.key.name===name);return vm.runInContext('({'+source.slice(prop.start,prop.end)+'}).'+name,ctx)}
+const player={currentItemType:'movie',guessMediaMimeType:()=>'',getPlatformAvplayEngineName:()=>'',isLivePlaybackItemType:()=>false,canUseAvPlay:()=>false,shouldPreferTvNativePipeline:()=>true,canUseHlsJs:()=>true,canUseDashJs:()=>false,canPlayNatively:()=>true,isLikelyHlsMimeType:t=>t==='application/vnd.apple.mpegurl',isLikelyDashMimeType:()=>false};
+const candidates=method('getPlaybackEngineCandidates');assert.equal(candidates.call(player,'fixture.m3u8','application/vnd.apple.mpegurl')[0],'native-hls');legacy=false;assert.equal(candidates.call(player,'fixture.m3u8','application/vnd.apple.mpegurl')[0],'hls.js');
+legacy=true;const ensure=method('ensureAdaptiveLibrariesForSource');await ensure.call(player,'application/vnd.apple.mpegurl','native-hls');assert.equal(loads,0);await ensure.call(player,'application/vnd.apple.mpegurl','hls.js');assert.equal(loads,1);
+console.log('PASS: legacy LG prefers native HLS; newer engines retain upstream preference; adaptive library loads only for its selected engine.');

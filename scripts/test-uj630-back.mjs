@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import vm from 'node:vm';
+const source=fs.readFileSync(new URL('../js/ui/navigation/focusEngine.js',import.meta.url),'utf8').replace(/^import .*;\n/gm,'').replace(/export /g,'');
+let now=1000,legacy=true,backs=0;
+const router={consumeRouteReturnBackGuard:()=>false,getCurrentScreen:()=>({consumeBackRequest:()=>false}),back:()=>{backs++},suppressPopstateUntil:0};
+const ctx={Map,Set,Number,Boolean,String,Date:{now:()=>now},supportsUj630Performance:()=>legacy,Platform:{normalizeKey:e=>e,isBackEvent:e=>e.keyCode===461},Router:router,document:{contains:()=>true,body:{classList:{contains:()=>false}}},console};ctx.globalThis=ctx;
+const focus=vm.runInNewContext(source+';FocusEngine;',ctx);
+const event=type=>({type,keyCode:461,key:'Back',code:'BrowserBack',preventDefault(){},stopPropagation(){},stopImmediatePropagation(){}});
+focus.handleKey(event('keydown'));assert.equal(backs,1);
+now+=300;focus.handleKey(event('keydown'));assert.equal(backs,1,'Held key must not traverse twice');
+focus.handleKeyUp(event('keyup'));now+=10;focus.handleKey(event('keydown'));assert.equal(backs,2);
+focus.handleKeyUp(event('keyup'));now+=50;router.suppressPopstateUntil=now+700;focus.handleKey(event('keydown'));
+assert.equal(backs,3,'A second released press within 250ms remains a distinct Back');
+assert.equal(router.suppressPopstateUntil,0,'New legacy key clears suppression for the preceding overlay event');
+focus.handleKeyUp(event('keyup'));legacy=false;now+=50;focus.handleKey(event('keydown'));assert.equal(backs,3,'Other TV back debounce remains unchanged');
+console.log('PASS: held Back is consumed once; distinct legacy presses are preserved; other TV debounce unchanged.');

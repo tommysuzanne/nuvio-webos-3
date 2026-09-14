@@ -1,0 +1,11 @@
+{
+  "revision": "42-ghibli.2",
+  "authorization": "User explicitly accepted version 42, p99 <= 35 ms and postponed memory validation; quick installation check only.",
+  "frameP95MaxMs": 20,
+  "frameP99MaxMs": 35,
+  "frameMaxMs": 100,
+  "memoryValidation": "DEFERRED_BY_USER",
+  "longPlaybackRetest": "NOT_REQUESTED",
+  "fullQualificationRetest": "NOT_REQUESTED",
+  "historicalEvidenceMustRemainUnchanged": true
+}

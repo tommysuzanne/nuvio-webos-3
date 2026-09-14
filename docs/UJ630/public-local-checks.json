@@ -1,0 +1,81 @@
+{
+  "date": "2026-09-14",
+  "scope": "Local public snapshot checks before initial publication; no TV installation or performance claim. CI identifies validation for each published commit.",
+  "uj630Groups": 41,
+  "nativeTests": 102,
+  "automatedSteps": [
+    {
+      "name": "public-surface",
+      "passed": true,
+      "elapsedMs": 308
+    },
+    {
+      "name": "uj630",
+      "passed": true,
+      "elapsedMs": 2956
+    },
+    {
+      "name": "native",
+      "passed": true,
+      "elapsedMs": 1801
+    },
+    {
+      "name": "checkSourceIntegrity",
+      "passed": true,
+      "elapsedMs": 147
+    },
+    {
+      "name": "checkNoUndef",
+      "passed": true,
+      "elapsedMs": 4803
+    },
+    {
+      "name": "build",
+      "passed": true,
+      "elapsedMs": 50019
+    },
+    {
+      "name": "checkLegacyRegex",
+      "passed": true,
+      "elapsedMs": 64
+    },
+    {
+      "name": "checkLegacyCss",
+      "passed": true,
+      "elapsedMs": 210
+    },
+    {
+      "name": "checkLegacyCssVars",
+      "passed": true,
+      "elapsedMs": 47
+    },
+    {
+      "name": "checkLegacyCssSupport",
+      "passed": true,
+      "elapsedMs": 790
+    },
+    {
+      "name": "checkLegacyJsApis",
+      "passed": true,
+      "elapsedMs": 5147
+    },
+    {
+      "name": "checkUj630PackagedLibraries",
+      "passed": true,
+      "elapsedMs": 317
+    }
+  ],
+  "actualPlaceholderIpk": {
+    "sha256": "293f130dba09d71f815efbd2ad00e34cfb6e358c2b791a56c29870499f333998",
+    "files": 22,
+    "es5Files": 19,
+    "policyGuardedPluginFiles": 3
+  },
+  "security": {
+    "gitleaksVersion": "8.30.1",
+    "reviewedMinifiedFalsePositiveFingerprints": 3,
+    "knownPrivateBackupValuesChecked": 95,
+    "privateRuntimeConfigurationValuesChecked": 5,
+    "matches": 0
+  }
+}

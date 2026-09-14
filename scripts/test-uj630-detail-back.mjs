@@ -1,0 +1,8 @@
+import assert from 'node:assert/strict';import fs from 'node:fs';import vm from 'node:vm';import {parse} from 'acorn';
+const source=fs.readFileSync(new URL('../js/ui/screens/detail/metaDetailsScreen.js',import.meta.url),'utf8');const ast=parse(source,{ecmaVersion:'latest',sourceType:'module'});const object=ast.body.find(n=>n.type==='ExportNamedDeclaration'&&n.declaration?.declarations?.some(v=>v.id.name==='MetaDetailsScreen')).declaration.declarations.find(v=>v.id.name==='MetaDetailsScreen').init;const prop=object.properties.find(p=>p.key.name==='consumeBackRequest');
+let legacy=true,backs=0,pending=0;const ctx={supportsUj630Performance:()=>legacy,window:{history:{state:{route:'detail'}}},Router:{getCurrent:()=> 'detail',back:options=>{assert.equal(options.skipConsume,true);backs++},backFromPendingNavigation:()=>{pending++}}};
+const consume=vm.runInNewContext('({'+source.slice(prop.start,prop.end)+'}).consumeBackRequest',ctx);const screen={isLoadingDetail:true,navigateBackFromDetail:()=>false};
+assert.equal(consume.call(screen),'history','Loading metadata must not remount a completed detail history entry');assert.equal(backs,1);assert.equal(pending,0);
+ctx.window.history.state.route='folderDetail';assert.equal(consume.call(screen),true);assert.equal(pending,1,'A not-yet-committed route still restores its caller');
+legacy=false;ctx.window.history.state.route='detail';assert.equal(consume.call(screen),true);assert.equal(pending,2);
+console.log('PASS: Back during metadata loading returns to the parent after detail history commit; pending mount and other platforms retain their behavior.');

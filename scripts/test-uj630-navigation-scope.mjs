@@ -1,0 +1,15 @@
+import fs from 'node:fs';import vm from 'node:vm';import assert from 'node:assert/strict';
+import {uj630FolderSourceKey,mergeUj630FolderLists,makeUj630FolderRows} from '../js/ui/screens/collection/uj630FolderRows.js';
+let profile='1',token='account-a',decodes=0,teardown;
+const ctx={SessionStore:{get accessToken(){return token}},ProfileManager:{getActiveProfileId:()=>profile},collectionSyncScope:()=>{decodes++;return token+':'+profile},registerSessionTeardownHandler:fn=>teardown=fn};
+const scope=vm.runInNewContext(fs.readFileSync('js/ui/navigation/uj630NavigationScope.js','utf8').replace(/^import .*;\n/gm,'').replace(/export /g,'')+';uj630NavigationScope;',ctx);
+assert.equal(scope(),'account-a:1');for(let i=0;i<10000;i++)scope();assert.equal(decodes,1);
+token='account-b';assert.equal(scope(),'account-b:1');profile='2';assert.equal(scope(),'account-b:2');teardown();scope();assert.equal(decodes,4);
+const source={provider:'trakt',traktListId:7,title:'One'};
+assert.equal(uj630FolderSourceKey(source),uj630FolderSourceKey({...source,title:'Renamed',index:8}));
+assert.notEqual(uj630FolderSourceKey(source),uj630FolderSourceKey({...source,traktListId:8}));
+assert.notEqual(uj630FolderSourceKey({provider:'addon',addonBaseUrl:'http://one',catalogId:'c'}),uj630FolderSourceKey({provider:'addon',addonBaseUrl:'http://two',catalogId:'c'}));
+const a=Array.from({length:5000},(_,i)=>({id:'a'+i})),b=Array.from({length:5000},(_,i)=>({id:'b'+i}));
+const merged=await mergeUj630FolderLists([a,b,[a[0]]],()=>true);assert.equal(merged.length,10000);assert.deepEqual(merged.slice(0,4).map(x=>x.id),['a0','b0','a1','b1']);
+const rows=await makeUj630FolderRows(merged,true,()=>true);assert.equal(rows.at(-1).items.at(-1).id,'b4999');assert(rows.at(-1).hasMore);assert.equal(await mergeUj630FolderLists([a],()=>false),null);
+console.log('PASS account/profile navigation isolation, cached scope lookup, actual stable source identity, 10000-item ordered merge/grid and cancellation.');

@@ -1,0 +1,50 @@
+AGENTS.md
+.roo
+favicon.svg
+
+nuvio.env.js
+local.properties
+node_modules/
+*.ipk
+*.wgt
+dist/
+.cache/
+.pm2/
+logs/
+app.bundle.js
+ecosystem.config.cjs
+scripts/commit-build-poller.mjs
+.DS_Store
+
+# Gerado em todo build por writeSharedRegistry() em scripts/build.mjs; o proprio
+# cabecalho do arquivo diz "GENERATED FILE - do not edit". Um clone limpo nao precisa.
+js/runtime/generated/
+
+# Tarballs de comparacao com upstream, logs, estado de editor e de agente
+*.tgz
+*.tar.gz
+*.log
+.idea/
+.vscode/
+.claude/
+.agents/
+
+# O symlink `node_modules` chegou a ser versionado apontando para si mesmo, o que
+# quebrava prettier/eslint com "Too many levels of symbolic links" e apagava as
+# dependencias na troca de branch. A linha com barra nao cobre um symlink.
+node_modules
+
+evidence-uj630/
+
+# Personal local artwork; only empty directories ship publicly.
+assets/uj630-artwork/*
+assets/uj630-artwork-1080/*
+assets/uj630-artwork-720/*
+!assets/uj630-artwork/.gitkeep
+!assets/uj630-artwork-1080/.gitkeep
+!assets/uj630-artwork-720/.gitkeep
+private/
+prive/
+backups/
+.venv/
+__pycache__/
