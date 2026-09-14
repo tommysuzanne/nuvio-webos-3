@@ -4,6 +4,27 @@
 
 iqui27 already provides a webOS 3 preview. This project builds on that work; it did not invent the webOS 3 port. Its reason to exist is the combination of a newer Nuvio reference, additional UX and reliability changes, and testing on an actual webOS 3 TV. It is not a claim that every TV or every workload runs faster here.
 
+## Problems that prompted the project
+
+The initial decision came from the maintainer’s use of an **LG 49UJ630V-ZA**, not from a feature checklist alone. The legacy foundation made an installation possible, but the early local experience did not meet the desired browsing workflow.
+
+| Initial observation or requirement | Why a stock installation was not enough for this use case | Response in this project |
+| --- | --- | --- |
+| Browsing became sluggish after adding many collection folders. | Collection browsing needed attention beyond passing the compatibility gate. Loading each title’s background was suspected of adding work; it was not isolated as the sole cause of every stall. | Windowed cards/rows, static covers/backgrounds, paced image work, bounded caches and deferred screens. |
+| Lite Home displayed catalog lists that had been disabled, alongside the configured collections. | The requested Home was **only collections and Continue Watching**, with the saved organization respected. | Dedicated Home content policy; excluded catalog requests and no fallback rows, independent of the old mode switch. |
+| A 720p interface looked too blurry on the 4K panel. | Lowering resolution was unacceptable to the owner even if it might reduce rendering work. | Retain **1920 × 1080** and optimize the workload instead. UI resolution remains independent of video resolution. |
+| The webOS 3 foundation integrated Nuvio 1.0.2, while the project selected the 1.1.2 reference. | The aim included bringing newer upstream functionality to the TV, not freezing development at the preview’s base version. | Integrate **Nuvio 1.1.2** with the legacy runtime adaptations, then test and refine the combined port. |
+
+**Observation is not attribution:** this is a summary of local user reports during early port iterations, which included local adaptations. It is not a clean A/B against an untouched exp.32 package, and does not establish that every iqui27 installation has these problems. Nor does upgrading to 1.1.2 alone prove that the collection or performance issues are fixed: those required additional changes in this project.
+
+Later iterations also corrected cover proportions, broken accents and stale extra addon sources. These are additional refinements, not retroactively presented as the original reason for starting the fork. Remote collection refresh and read-only TV organization were subsequently consolidated to support day-to-day use.
+
+## When we recommend this port
+
+**For an UJ630 owner who wants the same fixed, collection-focused 1080p experience, this is our recommended fit.** The recommendation rests on the combination of that workflow, our Nuvio 1.1.2 integration, targeted fixes and testing on the actual model. It is a suitability judgment, not a measured universal speed ranking.
+
+On another UHD webOS 3 model it is a candidate worth testing, with compatibility still unverified. If you need TV-side collection editing, the default decorative Home, automatic upstream updates or another platform, the deliberate restrictions here may make a different client a better fit. The table below routes those choices; it does not promise that every alternative supplies every requested feature.
+
 ## Which project should I choose?
 
 | Your need | Starting point |

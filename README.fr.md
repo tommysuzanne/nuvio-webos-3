@@ -1,84 +1,73 @@
 # Nuvio pour LG webOS 3.x
 
-**Installer Nuvio sur une ancienne TV LG UHD / 4K sous webOS 3.0 ou 3.5.** Port communautaire non officiel basé sur Nuvio 1.1.2 : application IPK téléchargeable, interface 1080p, collections et Reprendre, optimisations pour Chromium 38 et Node 0.12.2.
+**Vos collections, une interface 1080p nette et Nuvio 1.1.2 sur les anciennes TV LG UHD / 4K.** Un port IPK non officiel pour **webOS 3.0 / 3.5**, construit sur la compatibilité legacy d’iqui27 et adapté sur une **LG 49UJ630V-ZA**. Les autres modèles restent à vérifier.
 
-**[Télécharger l’application IPK](https://github.com/tommysuzanne/nuvio-webos-3/releases/latest)** · [Installation](docs/UJ630/INSTALLATION.md) · [Compatibilité détaillée](docs/COMPATIBILITY.md) · [English](README.md)
+**[Télécharger l’IPK](https://github.com/tommysuzanne/nuvio-webos-3/releases/latest)** · [Installer](docs/UJ630/INSTALLATION.md) · [Compatibilité](docs/COMPATIBILITY.md) · [English](README.md)
 
-## Pourquoi cette version existe ?
+## Pourquoi cette version existe
 
-**Une expérience Nuvio centrée sur les collections, adaptée sur une vraie TV webOS 3 et conservant une interface 1080p nette.** Le point de départ était concret : lancer l’application ne suffisait pas pour naviguer confortablement dans de nombreuses collections sur une LG UJ630. Nous avons **porté la référence Nuvio 1.1.2 sur cette base webOS 3**, puis ajouté un accueil fixe et allégé, des caches bornés, une actualisation ciblée et des corrections de navigation et de synchronisation.
+Pendant les premiers essais locaux sur l’UJ630, la navigation dans de nombreuses collections saccadait, l’accueil Lite affichait des catalogues pourtant désactivés et le passage en 720p rendait l’interface trop floue sur la dalle 4K. L’objectif était précis : **collections et Reprendre, couvertures lisibles, navigation réactive et maintien du 1080p**.
 
-[iqui27 propose déjà un port expérimental webOS 3](https://github.com/iqui27/NuvioTVSmart-legacy-webos/releases/tag/webos3-exp.32), qui constitue notre base de compatibilité. **Sa branche webOS 3 exp.32 intègre Nuvio 1.0.2 et des correctifs legacy ; notre port intègre Nuvio 1.1.2.** Sa release webOS 4, distincte, repose sur 1.1.0. Comparaison vérifiée le 15 septembre 2026. Les nouvelles fonctions viennent des auteurs de Nuvio ; leur portage vers cette ancienne plateforme fait bien partie de notre travail.
+Nous avons conservé la base de compatibilité d’iqui27, **porté Nuvio 1.1.2**, puis adapté la navigation, les images et la synchronisation. Sa preview webOS 3 exp.32 intègre **1.0.2 avec des correctifs legacy** ; sa release webOS 4, distincte, utilise 1.1.0. Comparaison vérifiée le 15 septembre 2026.
 
-| Ce que cette version apporte | Compromis à connaître |
+Ces constats concernent cette TV et les premiers builds locaux ; ils ne démontrent pas un défaut généralisé des versions d’iqui27. [Historique, références et comparatif complet](docs/WHY-THIS-FORK.md).
+
+## Est-ce le meilleur choix pour vous ?
+
+**Nous recommandons ce port aux utilisateurs d’UJ630 qui recherchent cette expérience centrée sur les collections en 1080p.** Il réunit une référence Nuvio plus récente, des corrections ciblées et des essais sur ce modèle. Sur les autres LG UHD webOS 3, c’est une solution à tester, sans garantie de compatibilité.
+
+| Vous recherchez… | Cette version apporte… |
 | --- | --- |
-| Portage de la référence **Nuvio 1.1.2**, plus récente que la base 1.0.2 de la preview webOS 3 d’iqui27. | Chaque fonction reste soumise aux capacités de la TV ; l’autosynchronisation audio des sous-titres n’est pas annoncée validée. |
-| Accueil collections + Reprendre, couvertures rectangulaires, fond fixe et navigation optimisée. | La présentation complète avec grands arrière-plans et catalogues par défaut n’est pas conservée. |
-| Collections actualisées sans réinstaller ; réponses périmées ou invalides écartées. | Création et organisation depuis un autre appareil ; lecture seule sur la TV. |
-| Chargement progressif des images, caches limités, écrans chargés à la demande et corrections des accents/addons. | Les images trop lourdes ou incompatibles peuvent céder la place à une carte avec titre. |
-| Réglages de performance permanents et sources 4K prioritaires. | Mises à jour manuelles ; aucun ajout de capacité de décodage à la TV. |
+| Un accueil ciblé | Collections + Reprendre, avec épisodes suivants et futurs, sans catalogues supplémentaires imposés. |
+| Une navigation claire | Couvertures rectangulaires, menu compact à gauche, fond fixe et contour de sélection immédiat. |
+| Moins de travail pendant la navigation | Cartes affichées par fenêtre, caches bornés, chargement régulé des images et écrans chargés à la demande. |
+| Des collections actualisées | Rafraîchissement éligible à l’accueil ou au premier plan après cinq minutes, ou manuel ; rejet des réponses invalides ou périmées. |
+| Des corrections au quotidien | Accents et synchronisation des addons corrigés, sources 4K placées en tête. |
 
-**Résultats mesurés :** sur la 49UJ630V-ZA, notre version42 historique affiche un accueil utilisable à chaud en environ **1,59 à 1,86 s**, avec un p99 de navigation de **19,78 à 33,611 ms** sur trois passages. Entre nos versions33 et42, le JavaScript principal chargé au démarrage diminue de **25,9 %**, tandis que le total avec les fichiers différés augmente de **3,2 %**. Cela ne signifie pas un démarrage 25,9 % plus rapide.
+**Compromis :** collections organisées sur un autre appareil, réglages de performance fixes et mises à jour manuelles. Les couvertures trop lourdes ou incompatibles peuvent être remplacées par une carte avec titre. Les addons HTTP et le lecteur natif restent disponibles ; les plugins exécutables/P2P incompatibles sont bloqués. Une source 4K nécessite toujours des codecs et un débit adaptés à votre TV.
 
-Il n’existe pas de comparaison contrôlée permettant d’affirmer « plus rapide que la version d’iqui27 » : ses mesures publiées concernent une autre TV. Ces résultats historiques ne constituent pas une nouvelle qualification du paquet public43. [**Comparatif détaillé, apports hérités et preuves**](docs/WHY-THIS-FORK.md) · [Mesures et limites](docs/UJ630/VALIDATION.md).
+Pour retrouver la présentation animée par défaut, éditer les collections sur la TV ou utiliser une autre plateforme, examinez les [versions d’iqui27](https://github.com/iqui27/NuvioTVSmart-legacy-webos#readme) et le [projet officiel](https://github.com/NuvioMedia/NuvioTVSmart/releases). Aucun comparatif contrôlé sur la même TV ne prouve une supériorité universelle de notre port.
 
-Pour une TV webOS 4 ou plus récente, consulter les [versions proposées par iqui27](https://github.com/iqui27/NuvioTVSmart-legacy-webos#readme) et le [projet officiel](https://github.com/NuvioMedia/NuvioTVSmart/releases) plutôt que supposer que ce port convient mieux.
-
-## Compatibilité
+## Vérifier votre TV
 
 | Téléviseur | Statut |
 | --- | --- |
-| **LG 49UJ630V-ZA**, UHD, firmware **06.10.75** | Installation testée ; contrôles rapides de navigation et réglages réussis sur la version43. Qualification complète limitée, voir ci-dessous. |
-| **Autres LG UHD / 4K webOS 3.0 et 3.5** | Compatibilité plausible grâce aux mêmes moteurs ; modèles à tester individuellement. |
-| **LG Full HD sous webOS 3.x** | Nécessitent un paquet avec interface 720p ; aucun paquet FHD validé n’est actuellement fourni. |
-| **webOS 1.x / 2.x** | Non pris en charge par cette release : moteurs WebKit et Node plus anciens. |
-| **webOS 4.x et suivants** | Hors du périmètre testé ; les optimisations spécifiques ne s’activent pas sur les moteurs Chromium plus récents. |
+| **LG 49UJ630V-ZA**, UHD, firmware 06.10.75 | Installation testée ; contrôles rapides de navigation/réglages réussis sur la version43. Limites ci-dessous. |
+| Autres **LG UHD / 4K webOS 3.0 / 3.5** | Non vérifiés ; retours par modèle bienvenus. |
+| **Full HD webOS 3.x** | Nécessite un autre paquet graphique ; cet IPK 1080p n’est pas validé. |
+| **webOS 1/2** | Non pris en charge. |
+| **webOS 4+** | Hors du périmètre testé. |
 
-Le port n’est donc pas annoncé compatible avec « toutes les TV sous webOS 3.5 et inférieur ». La mémoire, les codecs et le firmware restent propres à chaque modèle. Les [sources LG et limites](docs/COMPATIBILITY.md) détaillent cette distinction.
+La version du firmware n’est pas celle de webOS. [Compatibilité détaillée et sources LG](docs/COMPATIBILITY.md).
 
 ## Installer Nuvio sur webOS 3.0 / 3.5
 
-1. Vérifier le modèle, sa génération webOS et sa dalle UHD / 4K.
-2. Télécharger le fichier **`.ipk`** dans [Releases](https://github.com/tommysuzanne/nuvio-webos-3/releases/latest), ainsi que `SHA256SUMS`. Le ZIP des sources n’est pas l’application à installer.
-3. Activer **Developer Mode** et connecter la TV avec webOS Dev Manager ou les outils de développement LG.
-4. Suivre le [guide d’installation](docs/UJ630/INSTALLATION.md) : empreinte, sauvegarde, installation et redémarrage du service.
-5. Se connecter à son propre compte et configurer ses addons. Les collections se créent et s’organisent depuis un autre appareil.
+1. Télécharger le **`.ipk`** et `SHA256SUMS` dans [Releases](https://github.com/tommysuzanne/nuvio-webos-3/releases/latest). Le ZIP des sources n’est pas l’application TV.
+2. Activer **Developer Mode** et connecter la TV à l’ordinateur avec webOS Dev Manager ou les outils LG.
+3. Suivre le [guide d’installation](docs/UJ630/INSTALLATION.md) : empreinte, sauvegarde, installation et vérification du build exécuté.
+4. Se connecter à **son propre compte** et configurer ses addons.
 
-Developer Mode doit rester activé et être prolongé avant expiration. Une clé USB ne rend pas cette installation permanente. L’identifiant `space.nuvio.webos` remplace une application existante portant ce même identifiant : sauvegarder ses réglages avant mise à jour.
+**Developer Mode doit rester activé et être prolongé avant expiration.** Une clé USB seule ne rend pas l’installation permanente. L’identifiant `space.nuvio.webos` remplace une application existante portant cet identifiant : sauvegarder avant mise à jour.
 
-Le paquet public ne contient **ni compte du mainteneur, ni profils, addons configurés, clés personnelles ou miniatures privées**. Il reprend uniquement la configuration cliente déjà publique du projet legacy ; la disponibilité de ses services dépend d’upstream.
+Le paquet public ne contient **ni compte du mainteneur, ni clés personnelles, addons configurés ou miniatures privées**. [Mises à jour, confidentialité et questions fréquentes](docs/FAQ.md).
 
-## Présentation et optimisations
+## Résultats de performance
 
-- Accueil avec **collections et Reprendre**, épisodes suivants et futurs ; aucun catalogue supplémentaire imposé.
-- Interface **1080p**, couvertures rectangulaires, menu compact à gauche et fond fixe.
-- Réglages de fluidité permanents sur le moteur visé ; le bouton « mode fluide » a été supprimé dans la version43.
-- Navigation virtualisée, caches bornés, annulation réseau et chargements différés.
-- Accents corrigés, synchronisation des addons corrigée et sources 4K prioritaires.
-- [Préparation facultative de miniatures](docs/UJ630/ARTWORK.md) sur ordinateur, notamment plein cadre 16:9.
+Version **42 historique**, 49UJ630V-ZA en **1080p**, trois passages contrôlés :
 
-La résolution de l’interface ne fixe pas celle du film. La lecture dépend des codecs natifs, du fichier et du réseau. Les moteurs P2P et plugins exécutables incompatibles restent bloqués sur le moteur visé.
+| Mesure | Plage observée |
+| --- | --- |
+| Premier accueil utilisable à chaud | Environ **1,59 à 1,86 s** |
+| Intervalle entre frames, p99 en navigation | **19,780 à 33,611 ms** |
 
-## État des validations
+Le seuil p99 révisé est de 35 ms ; les échecs au seuil initial de 33 ms restent documentés. La version43 a reçu des contrôles rapides sur la TV avec des miniatures privées. **Le paquet public téléchargeable n’a pas reçu de qualification TV complète distincte.** La stabilité mémoire prolongée, l’avance précise HEVC et la couverture complète veille/redémarrage restent à valider.
 
-**41 groupes UJ630 et 102 tests JavaScript**, plus les contrôles de construction et de compatibilité. La CI ne se connecte pas à une TV.
+**41 groupes de régression UJ630 et 102 tests JavaScript natifs**, plus les contrôles de construction/compatibilité, tournent en CI. Cela ne prouve pas le « zéro lag ». [Mesures complètes, gains du refactor et limites](docs/UJ630/VALIDATION.md).
 
-La version43 a passé des contrôles rapides sur une 49UJ630V-ZA avec miniatures privées. Le paquet public n’a pas reçu de qualification TV complète distincte. Les mesures p99 historiques de la version42 respectent le seuil révisé de 35 ms ; la stabilité mémoire prolongée, l’avance précise HEVC et les scénarios physiques de veille/redémarrage restent incomplets. Aucun « zéro lag » ni fonctionnement universel annoncé. [Résultats et limites](docs/UJ630/VALIDATION.md).
+## Compiler, contribuer ou demander de l’aide
 
-## Questions fréquentes
+[Compiler](docs/UJ630/INSTALLATION.md#reproduce-the-public-package) · [Contribuer](CONTRIBUTING.md) · [Signaler son modèle](https://github.com/tommysuzanne/nuvio-webos-3/issues/new?template=compatibility_report.yml) · [Signaler un bug](https://github.com/tommysuzanne/nuvio-webos-3/issues/new?template=bug_report.yml)
 
-**Pourquoi UJ630 figure encore dans le nom du fichier ?** C’est le modèle d’origine. Les noms, tags et empreintes de la release43 sont conservés ; le code détecte le moteur, pas le nom du téléviseur. Le renommage du dépôt ne valide pas de nouveaux modèles.
+Développeurs et agents : commencer par [AGENTS.md](AGENTS.md) et l’[index documentaire](docs/index.md). Ne pas publier de données personnelles dans les issues ou les PR.
 
-**Mises à jour automatiques ?** Non sur le moteur visé : les nouvelles versions upstream doivent être adaptées et testées, puis installées manuellement.
-
-**Nouvelles collections ?** Elles arrivent lors d’une actualisation éligible, sans reconstruire l’application. Les images doivent respecter les limites du proxy ; une vignette incompatible peut être remplacée par une carte avec titre ou une miniature préparée localement.
-
-**L’application disparaît après désactivation de Developer Mode ?** Ce mode est nécessaire aux applications installées ainsi ; ce projet ne modifie ni le firmware ni les droits système.
-
-## Aider le projet
-
-[Signaler son modèle de TV](https://github.com/tommysuzanne/nuvio-webos-3/issues/new?template=compatibility_report.yml) · [Signaler un bug](https://github.com/tommysuzanne/nuvio-webos-3/issues/new?template=bug_report.yml) · [Compiler et contribuer](CONTRIBUTING.md).
-
-Ne pas publier de clés API, URL d’addons configurés, exports de compte ou captures contenant des données privées. Un retour communautaire est identifié comme tel avant d’être ajouté aux modèles confirmés.
-
-Sources sous **GPLv3**, avec les crédits de [NuvioMedia](https://github.com/NuvioMedia/NuvioTVSmart), du [port legacy d’iqui27](https://github.com/iqui27/NuvioTVSmart-legacy-webos) et des adaptations initiales UJ630. [Licence](LICENSE) · [Provenance](NOTICE.md).
+**GPLv3**, maintenu par Tommy Suzanne. Merci à [NuvioMedia](https://github.com/NuvioMedia/NuvioTVSmart) pour Nuvio et à [iqui27](https://github.com/iqui27/NuvioTVSmart-legacy-webos) pour la base legacy. Ce port n’est une release officielle ni de LG ni de Nuvio. [Licence](LICENSE) · [Crédits et références](NOTICE.md).
