@@ -1,0 +1,64 @@
+{
+  "scope": "Actual IPK JavaScript after legacy transform and final ares minification. Combined entry/chunk bytes are not all downloaded or parsed at startup. No parsing-only timing was isolated.",
+  "packages": [
+    {
+      "label": "reference33",
+      "files": [
+        {
+          "file": "app.bundle.js",
+          "bytes": 2831812,
+          "sha256": "5f56791cc5c83d72e518d7482a57950f5d78081d4581e8c52dfcee7a3000c8d7"
+        },
+        {
+          "file": "player.chunk.js",
+          "bytes": 768106,
+          "sha256": "bad705ac6b8603d779ed7902f669c4bf0565f60534dfa6f72ac7b99ef56cd15d"
+        }
+      ],
+      "combinedBytes": 3599918
+    },
+    {
+      "label": "candidate42",
+      "files": [
+        {
+          "file": "app.bundle.js",
+          "bytes": 2099410,
+          "sha256": "24212ea769b02babc5c70598f7e5d08ea81d1dc13871be0051c1359db1ca5f8e"
+        },
+        {
+          "file": "detail.chunk.js",
+          "bytes": 279592,
+          "sha256": "cfe70f62359199d21f2c85a2ef8eae44ed0819ac0572726ac76d39f488577c38"
+        },
+        {
+          "file": "discover.chunk.js",
+          "bytes": 66955,
+          "sha256": "2e6a7af1b606ab1ec62d996b378fa8352f67d86b344d94e03f3d6aa594382195"
+        },
+        {
+          "file": "player.chunk.js",
+          "bytes": 765501,
+          "sha256": "2bc4fefa9b25e5f9bbcda7e0f20701b3dabaf7168d7baf25ae8e5bc29cc8a50c"
+        },
+        {
+          "file": "search.chunk.js",
+          "bytes": 68127,
+          "sha256": "5b8f09b36d2b9ee18fd13d6f0b08a2e2685aec98ee9f4d1e7c890149ba025e3d"
+        },
+        {
+          "file": "settings.chunk.js",
+          "bytes": 326152,
+          "sha256": "7504559794a0015c4aa8f55925508d3f2a2ef6d0a0eb6bf2ae0dd228b0dbfea8"
+        },
+        {
+          "file": "stream.chunk.js",
+          "bytes": 110316,
+          "sha256": "20f12f2bf47b16389931a83285237321f663e73b4c894adf1a7171523ec96b96"
+        }
+      ],
+      "combinedBytes": 3716053
+    }
+  ],
+  "sourceReportSha256": "8da077e63bf210c1f2b4600a7bd64b911b4deae46d3d00b791c2abb79df73e02",
+  "comparison": "Historical internal build33 versus build42; not unmodified iqui27 and not the public build43."
+}

@@ -4,6 +4,26 @@
 
 **[Télécharger l’application IPK](https://github.com/tommysuzanne/nuvio-webos-3/releases/latest)** · [Installation](docs/UJ630/INSTALLATION.md) · [Compatibilité détaillée](docs/COMPATIBILITY.md) · [English](README.md)
 
+## Pourquoi cette version existe ?
+
+**Une expérience Nuvio centrée sur les collections, adaptée sur une vraie TV webOS 3 et conservant une interface 1080p nette.** Le point de départ était concret : lancer l’application ne suffisait pas pour naviguer confortablement dans de nombreuses collections sur une LG UJ630. Nous avons **porté la référence Nuvio 1.1.2 sur cette base webOS 3**, puis ajouté un accueil fixe et allégé, des caches bornés, une actualisation ciblée et des corrections de navigation et de synchronisation.
+
+[iqui27 propose déjà un port expérimental webOS 3](https://github.com/iqui27/NuvioTVSmart-legacy-webos/releases/tag/webos3-exp.32), qui constitue notre base de compatibilité. **Sa branche webOS 3 exp.32 intègre Nuvio 1.0.2 et des correctifs legacy ; notre port intègre Nuvio 1.1.2.** Sa release webOS 4, distincte, repose sur 1.1.0. Comparaison vérifiée le 15 septembre 2026. Les nouvelles fonctions viennent des auteurs de Nuvio ; leur portage vers cette ancienne plateforme fait bien partie de notre travail.
+
+| Ce que cette version apporte | Compromis à connaître |
+| --- | --- |
+| Portage de la référence **Nuvio 1.1.2**, plus récente que la base 1.0.2 de la preview webOS 3 d’iqui27. | Chaque fonction reste soumise aux capacités de la TV ; l’autosynchronisation audio des sous-titres n’est pas annoncée validée. |
+| Accueil collections + Reprendre, couvertures rectangulaires, fond fixe et navigation optimisée. | La présentation complète avec grands arrière-plans et catalogues par défaut n’est pas conservée. |
+| Collections actualisées sans réinstaller ; réponses périmées ou invalides écartées. | Création et organisation depuis un autre appareil ; lecture seule sur la TV. |
+| Chargement progressif des images, caches limités, écrans chargés à la demande et corrections des accents/addons. | Les images trop lourdes ou incompatibles peuvent céder la place à une carte avec titre. |
+| Réglages de performance permanents et sources 4K prioritaires. | Mises à jour manuelles ; aucun ajout de capacité de décodage à la TV. |
+
+**Résultats mesurés :** sur la 49UJ630V-ZA, notre version42 historique affiche un accueil utilisable à chaud en environ **1,59 à 1,86 s**, avec un p99 de navigation de **19,78 à 33,611 ms** sur trois passages. Entre nos versions33 et42, le JavaScript principal chargé au démarrage diminue de **25,9 %**, tandis que le total avec les fichiers différés augmente de **3,2 %**. Cela ne signifie pas un démarrage 25,9 % plus rapide.
+
+Il n’existe pas de comparaison contrôlée permettant d’affirmer « plus rapide que la version d’iqui27 » : ses mesures publiées concernent une autre TV. Ces résultats historiques ne constituent pas une nouvelle qualification du paquet public43. [**Comparatif détaillé, apports hérités et preuves**](docs/WHY-THIS-FORK.md) · [Mesures et limites](docs/UJ630/VALIDATION.md).
+
+Pour une TV webOS 4 ou plus récente, consulter les [versions proposées par iqui27](https://github.com/iqui27/NuvioTVSmart-legacy-webos#readme) et le [projet officiel](https://github.com/NuvioMedia/NuvioTVSmart/releases) plutôt que supposer que ce port convient mieux.
+
 ## Compatibilité
 
 | Téléviseur | Statut |
@@ -20,7 +40,7 @@ Le port n’est donc pas annoncé compatible avec « toutes les TV sous webOS 3.
 
 1. Vérifier le modèle, sa génération webOS et sa dalle UHD / 4K.
 2. Télécharger le fichier **`.ipk`** dans [Releases](https://github.com/tommysuzanne/nuvio-webos-3/releases/latest), ainsi que `SHA256SUMS`. Le ZIP des sources n’est pas l’application à installer.
-3. Activer **Developer Mode** et connecter la TV aux outils de développement LG.
+3. Activer **Developer Mode** et connecter la TV avec webOS Dev Manager ou les outils de développement LG.
 4. Suivre le [guide d’installation](docs/UJ630/INSTALLATION.md) : empreinte, sauvegarde, installation et redémarrage du service.
 5. Se connecter à son propre compte et configurer ses addons. Les collections se créent et s’organisent depuis un autre appareil.
 

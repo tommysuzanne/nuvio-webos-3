@@ -12,6 +12,21 @@
 
 Based on **Nuvio 1.1.2**, with credit to [NuvioMedia](https://github.com/NuvioMedia/NuvioTVSmart) and [iqui27's legacy webOS port](https://github.com/iqui27/NuvioTVSmart-legacy-webos). This is not an official LG or Nuvio release.
 
+## Why choose this fork?
+
+**A collection-focused Nuvio experience tuned on a real webOS 3 TV, with a sharp 1080p interface.** The project started because making Nuvio launch was not enough for comfortable browsing of large collections on an LG UJ630. It **ports the Nuvio 1.1.2 reference onto the older webOS 3 foundation**, then adds a fixed, lighter Home presentation, bounded image/cache work, reliable collection refresh and targeted navigation/sync fixes.
+
+[iqui27 already provides a webOS 3 preview](https://github.com/iqui27/NuvioTVSmart-legacy-webos/releases/tag/webos3-exp.32), and this project builds on that foundation. **Its webOS 3 exp.32 line integrates Nuvio 1.0.2 plus legacy fixes; our port integrates Nuvio 1.1.2.** iqui27's separate webOS 4 release is based on 1.1.0. These are different branches, reviewed on 2026-09-15. The new application features belong to NuvioMedia; bringing that newer reference to this legacy target is part of our work.
+
+| Choose this port if… | Consider another build if… |
+| --- | --- |
+| You want collections + Continue Watching, rectangular covers and a fixed background on an UHD webOS 3 TV. | You want the legacy branch's default Home presentation or TV-side collection editing. |
+| You accept managing collections elsewhere, manual updates and fixed performance settings. | You need a different platform: consult [iqui27's build guide](https://github.com/iqui27/NuvioTVSmart-legacy-webos#readme) or [official Nuvio](https://github.com/NuvioMedia/NuvioTVSmart/releases). |
+
+**Measured, with limits:** historical build42 reached a warm usable Home in about **1.59–1.86 s**, with navigation frame p99 **19.78–33.611 ms** across three runs on the 49UJ630V-ZA. Our own build33 → build42 refactor reduced the startup JavaScript entry by **25.9%** through deferred screens; total entry + chunks grew **3.2%**. These are not a speed comparison against iqui27, and not a new qualification of public build43.
+
+[**Full comparison: inherited features, additions, tradeoffs and evidence**](docs/WHY-THIS-FORK.md) · [All measurements and limits](docs/UJ630/VALIDATION.md)
+
 ## Which LG TVs can use it?
 
 | TV / platform | Current status |
@@ -28,7 +43,7 @@ These are platform-based expectations, not device test results. Memory, remote c
 
 1. Check that your TV is an **UHD / 4K webOS 3.x model** using the [compatibility guide](docs/COMPATIBILITY.md).
 2. Open [Releases](https://github.com/tommysuzanne/nuvio-webos-3/releases/latest) and download the **`.ipk`**, plus `SHA256SUMS`. The source ZIP is not the TV application.
-3. Enable **Developer Mode** on the TV and pair it with your computer using LG's developer tools.
+3. Enable **Developer Mode** on the TV and pair it with your computer using webOS Dev Manager or LG's developer tools.
 4. Follow the [installation and update instructions](docs/UJ630/INSTALLATION.md), including checksum verification, backup and service restart.
 5. Sign into **your own account**, configure your own addons and manage your collections from another Nuvio client.
 

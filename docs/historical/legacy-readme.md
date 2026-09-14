@@ -1,3 +1,5 @@
+> Historical snapshot, not the current status of iqui27's project. See the dated [comparison and current source links](../WHY-THIS-FORK.md).
+
 > ## ⚠️ Unofficial modified build — legacy LG webOS
 >
 > **This is not the official Nuvio TV.** It is a modified fork, maintained by a

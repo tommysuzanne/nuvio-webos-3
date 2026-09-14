@@ -16,6 +16,12 @@ Rounded values above are for reading only. [Full numerical timing samples](histo
 
 The retained thresholds are frame p95 ≤20 ms, p99 ≤35 ms and no interval >100 ms; internal key processing p95 ≤50 ms and no event >100 ms. Internal processing, event-to-next-frame, network wait and video playback are different measurements. Warm first usable screen measurements for the historical42 build were approximately 1.634 / 1.588 / 1.856 seconds, under its two-second target. A real focused card and active navigation define usability; not every image has to be loaded.
 
+## Refactor size measurements and comparison scope
+
+Between our historical build33 and build42, the final packaged startup `app.bundle.js` decreased from **2,831,812 to 2,099,410 bytes (−25.9%)**. Entry plus all deferred chunks increased from **3,599,918 to 3,716,053 bytes (+3.2%)**. The benefit is moving screen code out of startup, not reducing total JavaScript. Parsing-only time was not measured. [Per-file sizes and hashes](historical33-42-bundle-sizes.json).
+
+These are internal versions of this port, not an A/B against unmodified iqui27. Its published browser benchmarks use an OLED65C9/webOS 4.x, so they cannot be divided by our UJ630 p99 values to claim a speedup. [Why this fork exists and what it adds](../WHY-THIS-FORK.md).
+
 ## What remains unqualified
 
 - Long-term total memory stability is **not established**. Thirty navigation cycles did not establish a leak-free state; heap growth followed by partial recovery requires further controlled measurements of the browser, service and decoded media. Cache estimates are not total process memory.
