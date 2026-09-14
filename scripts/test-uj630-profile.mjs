@@ -27,16 +27,24 @@ assert.equal(effective.heroSectionEnabled, false);
 assert.equal(effective.continueWatchingEnabled, true);
 assert.equal(JSON.stringify(saved), snapshot, "Device policy must not mutate profile preferences");
 assert.equal(data.size, 0, "Reading policy must not write storage");
-data.set("nuvioDevicePerformance", JSON.stringify({homeContentMode:"collections_resume",customField:17}));
-p.setUj630PerformanceEnabled(false);
-assert.equal(JSON.parse(data.get("nuvioDevicePerformance")).customField,17);
+const legacyPreference = JSON.stringify({enabled:false,homeContentMode:"collections_resume",customField:17});
+data.set("nuvioDevicePerformance",legacyPreference);
+assert.equal(p.isUj630PerformanceEnabled(),true,"An old disabled preference cannot switch off the permanent UJ630 policy");
+assert.equal(p.syncUj630PerformanceClass(),true);
 assert.equal(p.isUj630CollectionsEnabled(),true);
-assert.equal(p.applyUj630Layout(saved).heroSectionEnabled, false, "Collections-only remains static when fluent mode is off");
-assert.deepEqual([...data.keys()], ["nuvioDevicePerformance"]);
-p.setUj630PerformanceEnabled(true);
-assert.equal(p.isUj630PerformanceEnabled(), true);
+assert.equal(p.applyUj630Layout(saved).heroSectionEnabled,false);
+assert.equal(data.get("nuvioDevicePerformance"),legacyPreference,"Applying the permanent policy preserves stored fields");
+data.set("nuvioDevicePerformance","malformed");
+assert.equal(p.isUj630PerformanceEnabled(),true,"Malformed obsolete preferences cannot disable the device policy");
+const storageGet = globalThis.localStorage.getItem;
+globalThis.localStorage.getItem=()=>{throw Error("storage unavailable")};
+assert.equal(p.isUj630PerformanceEnabled(),true,"The permanent policy does not depend on working storage");
+globalThis.localStorage.getItem=storageGet;
 globalThis.navigator.userAgent = "Mozilla/5.0 (Web0S; Linux/SmartTV) Chrome/68.0.0.0";
+assert.equal(p.isUj630PerformanceEnabled(),false);
 assert.equal(p.applyUj630Layout(saved), saved, "Newer webOS should retain its normal layout");
+globalThis.navigator.userAgent="Mozilla/5.0 Chrome/38.0";
+assert.equal(p.isUj630PerformanceEnabled(),false,"The policy is not enabled on non-webOS devices");
 console.log(
-  "PASS: local-only layout policy, reversible switch, profiles unchanged, newer engines unchanged."
+  "PASS: permanent UJ630 policy ignores obsolete disabled state; profiles, other devices and storage are preserved."
 );

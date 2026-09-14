@@ -1,8 +1,3 @@
-import {
-  supportsUj630Performance,
-  isUj630PerformanceEnabled,
-  setUj630PerformanceEnabled
-} from "../../../platform/uj630Performance.js";
 /* global __NUVIO_APP_VERSION__ */
 import { Router } from "../../navigation/router.js";
 import { ScreenUtils } from "../../navigation/screen.js";
@@ -3416,20 +3411,6 @@ export const SettingsScreen = {
     `;
   },
 
-  renderDevicePerformanceToggle() {
-    if (!supportsUj630Performance()) return "";
-    this.actionMap.set("device:uj630Performance", () => {
-      setUj630PerformanceEnabled(!isUj630PerformanceEnabled());
-    });
-    return this.renderToggleRow({
-      focusKey: "device:uj630Performance",
-      title: "Mode fluide — cette TV",
-      subtitle:
-        "Accueil simplifié et effets allégés. Qualité vidéo inchangée. Désactivez pour retrouver votre présentation habituelle.",
-      checked: isUj630PerformanceEnabled()
-    });
-  },
-
   renderAdvancedSection(model) {
     this.actionMap.set("advanced:fastHorizontalNavigation", () => {
       LayoutPreferences.set({
@@ -3481,7 +3462,6 @@ export const SettingsScreen = {
           subtitleKey: "experience_mode_switch_to_advanced_header_subtitle"
         })}
         <div class="settings-group-card"><div class="settings-stack">
-          ${this.renderDevicePerformanceToggle()}
           ${this.renderActionRow({
             focusKey: "advanced:switchExperience",
             title: t("experience_mode_switch_to_advanced", {}, "Switch to Advanced"),
@@ -3497,7 +3477,6 @@ export const SettingsScreen = {
 
     return `
       ${this.renderSectionHeader(SECTION_META.find((item) => item.id === "advanced"))}
-      <div class="settings-group-card"><div class="settings-stack">${this.renderDevicePerformanceToggle()}</div></div>
       <div class="settings-group-heading"><div class="settings-group-title">${escapeHtml(t("experience_mode_group_title", {}, "Experience mode"))}</div></div>
       <div class="settings-group-card"><div class="settings-stack">
         ${this.renderActionRow({
@@ -4063,7 +4042,6 @@ export const SettingsScreen = {
           subtitleKey: "layout_selection_subtitle"
         })}
         <div class="settings-group-card"><div class="settings-stack">
-          ${this.renderDevicePerformanceToggle()}
           ${homeLayoutBody}
           ${
             selectedLayout === "classic"
@@ -4398,7 +4376,6 @@ export const SettingsScreen = {
 
     return `
       ${this.renderSectionHeader(SECTION_META.find((item) => item.id === "layout"))}
-      <div class="settings-group-card"><div class="settings-stack">${this.renderDevicePerformanceToggle()}</div></div>
       <div class="settings-group-card settings-group-card-fill">
         <div class="settings-stack">
           ${this.renderCollapsibleRow({

@@ -8,7 +8,8 @@ Ce dépôt partage les adaptations de Nuvio 1.1.2 pour une LG 49UJ630V-ZA : inte
 - Developer Mode reste nécessaire, avec prolongation avant expiration. Aucun root ni changement de firmware.
 - Les clés API, exports, sauvegardes de compte et couvertures personnelles ne sont pas publiés.
 - Les outils permettent de préparer ses propres miniatures, notamment en plein cadre 16:9 sans déformation.
-- La version publique doit être reconstruite avec une configuration locale ou un IPK upstream compatible ; aucun binaire configuré n'est publié.
+- [Télécharger le paquet 43 prêt à installer](https://github.com/tommysuzanne/nuvio-webos-uj630/releases/tag/1.1.2-uj630.43) : configuration cliente déjà publique du projet legacy, sans compte ni addons personnels. Connectez-vous à votre propre compte.
+- Les réglages du mode fluide sont désormais permanents sur l’UJ630 ; le bouton a été supprimé, y compris pour les anciens réglages désactivés.
 - Le p99 historique de la version 42 passe le seuil révisé de 35 ms ; la mémoire prolongée reste non qualifiée. La version publique n'a pas été requalifiée sur la TV.
 
 [Construction et installation](docs/UJ630/INSTALLATION.md) · [Miniatures](docs/UJ630/ARTWORK.md) · [Résultats et limites](docs/UJ630/VALIDATION.md)
