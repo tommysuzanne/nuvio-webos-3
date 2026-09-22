@@ -1,3 +1,5 @@
+import { supportsUj630Performance } from "../../../platform/uj630Performance.js";
+import { Uj630MemberAssets } from "../../../core/media/uj630MemberAssets.js";
 import { MemberCatalogStorage } from "../../local/memberCatalogStorage.js";
 import { ServerConfigurationStore } from "../../local/serverConfigurationStore.js";
 import { SupabaseApi } from "./supabaseApi.js";
@@ -65,7 +67,7 @@ function mapAvatar(row = {}) {
 }
 
 function mapMemberAvatar(row = {}) {
-  return {
+  const mapped = {
     id: String(row.id || ""),
     displayName: String(row.display_name || row.displayName || "Avatar"),
     imageUrl: null,
@@ -78,6 +80,8 @@ function mapMemberAvatar(row = {}) {
     assetVersion: Number(row.asset_version || row.assetVersion || 1) || 1,
     memberOnly: true
   };
+  const previous = supportsUj630Performance() && (cachedMemberCatalog || []).find(item => item.id === mapped.id && item.assetVersion === mapped.assetVersion && item.storagePath === mapped.storagePath);
+  return previous ? Object.assign(previous, mapped, {imageUrl:previous.imageUrl}) : mapped;
 }
 
 function storedCatalog() {
@@ -110,6 +114,20 @@ function hasStoredMemberCatalog() {
 
 async function loadMemberAvatarAsset(avatar, generation = memberCacheGeneration) {
   if (!avatar?.id || !avatar.storagePath || avatar.imageUrl) {
+    return avatar;
+  }
+  if (supportsUj630Performance()) {
+    const imageUrl = await Uj630MemberAssets.load(`avatar:${avatar.id}:v${avatar.assetVersion}`, async signal => {
+      const saved = await MemberCatalogStorage.loadAsset("avatar", avatar.id, avatar.assetVersion);
+      if (signal.aborted) return null;
+      if (saved) return saved;
+      const blob = await SupabaseApi.downloadStorageObject(MEMBER_AVATAR_BUCKET, avatar.storagePath, true, {signal});
+      if (blob && !signal.aborted && generation === memberCacheGeneration)
+        await MemberCatalogStorage.saveAsset("avatar", avatar.id, avatar.assetVersion, blob, {shouldSave:() => !signal.aborted && generation === memberCacheGeneration});
+      return blob;
+    }, () => { avatar.imageUrl = null; });
+    if (generation !== memberCacheGeneration) return null;
+    avatar.imageUrl = imageUrl;
     return avatar;
   }
   try {
@@ -166,7 +184,7 @@ async function hydrateStoredMemberCatalog() {
     const entries = stored.memberItems
       .map((row) => mapMemberAvatar(row))
       .filter((avatar) => avatar.id && avatar.storagePath);
-    const loaded = await Promise.all(
+    const loaded = supportsUj630Performance() ? entries : await Promise.all(
       entries.map((avatar) => loadMemberAvatarAsset(avatar, generation))
     );
     if (generation === memberCacheGeneration) {
@@ -245,7 +263,7 @@ async function fetchMemberAvatarCatalog() {
     const entries = (Array.isArray(response) ? response : [])
       .map((row) => mapMemberAvatar(row))
       .filter((avatar) => avatar.id && avatar.storagePath);
-    const loaded = await Promise.all(
+    const loaded = supportsUj630Performance() ? entries : await Promise.all(
       entries.map((avatar) => loadMemberAvatarAsset(avatar, generation))
     );
     if (generation !== memberCacheGeneration) {
@@ -309,6 +327,18 @@ function refreshMemberCatalogInBackground() {
 }
 
 export const AvatarRepository = {
+  async ensureImages(ids = [], {isCurrent = () => true} = {}) {
+    if (!supportsUj630Performance()) return;
+    for (const id of new Set(ids)) {
+      if (!isCurrent()) return;
+      const avatar = (cachedMemberCatalog || []).find(item => item.id === String(id || ""));
+      if (avatar) await loadMemberAvatarAsset(avatar);
+    }
+  },
+  assetKey(id) {
+    const avatar = (cachedMemberCatalog || []).find(item => item.id === String(id || ""));
+    return avatar ? `avatar:${avatar.id}:v${avatar.assetVersion}` : "";
+  },
   getCachedAvatarCatalog(hasMemberAccess = false) {
     hydrateStandardCatalog();
     const standardCatalog = Array.isArray(cachedStandardCatalog) ? cachedStandardCatalog : [];
@@ -352,6 +382,7 @@ export const AvatarRepository = {
   },
 
   invalidateCache() {
+    if (supportsUj630Performance()) Uj630MemberAssets.clear();
     catalogGeneration += 1;
     cachedStandardCatalog = null;
     standardCatalogPromise = null;

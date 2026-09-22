@@ -1,3 +1,4 @@
+import { requestLocalMediaRead } from "../../core/network/localMediaRead.js";
 import { Platform } from "../../platform/index.js";
 import { TizenCapabilities } from "../../platform/tizen/tizenCapabilities.js";
 import { TizenEngineFsService } from "../../platform/tizen/tizenEngineFsService.js";
@@ -189,8 +190,8 @@ export const localMediaEmbeddedSubtitleRepository = {
                 startSeconds: Math.max(0, Number(startSeconds) || 0),
                 endSeconds: Math.max(1, Number(endSeconds) || 0)
               })
-          : requestWebOsCompanionService({
-              method: "embeddedSubtitleTextWindow",
+          : requestLocalMediaRead({
+              method: "embeddedSubtitleTextWindow", timeoutMs: REQUEST_TIMEOUT_MS,
               parameters: {
                 url: targetUrl,
                 trackNumber: targetTrack,
@@ -202,6 +203,7 @@ export const localMediaEmbeddedSubtitleRepository = {
         REQUEST_TIMEOUT_MS
       );
     } catch (error) {
+      if (error?.name === "AbortError") throw error;
       throw createRequestError(error, "Embedded text subtitle extraction failed");
     }
 

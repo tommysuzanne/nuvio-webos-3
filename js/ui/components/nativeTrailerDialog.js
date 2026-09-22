@@ -15,9 +15,9 @@ export function nativeTrailerQuery(meta = {}, params = {}) {
 // One owner for the dialog, HTTP request, media element and input handlers.
 // No polling, no film progress writes, and no video bytes buffered in JS.
 export class NativeTrailerDialog {
-  constructor({ query, onClose, request = requestWebOsCompanionService }) {
+  constructor({ query, onClose, beforePlay, request = requestWebOsCompanionService }) {
     this.query = query;
-    this.onClose = onClose;
+    this.onClose = onClose; this.beforePlay = beforePlay;
     this.request = request;
     this.closed = false;
     this.generation = 0;
@@ -92,6 +92,7 @@ export class NativeTrailerDialog {
   }
 
   play(url, choice) {
+    this.beforePlay?.();
     this.dialog?.destroy(); this.dialog = null;
     this.stopVideo();
     const layer = document.createElement("div");

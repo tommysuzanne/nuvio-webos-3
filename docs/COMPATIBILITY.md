@@ -22,9 +22,9 @@ The built-in browser on webOS 1.x/2.x can report Chromium even though packaged a
 
 | Model | Platform evidence | Firmware | Display | Evidence scope |
 | --- | --- | --- | --- | --- |
-| LG **49UJ630V-ZA** | webOS 3.x; device reported SDK **3.9.0**, Chromium 38 and Node 0.12.2 | **06.10.75** | UHD; UI 1920 × 1080 | Historical42 navigation/playback measurements with documented limitations; build43 installation/settings/navigation and personal build44 detail/native-trailer checks with personal artwork. |
+| LG **49UJ630V-ZA** | webOS 3.x; device reported SDK **3.9.0**, Chromium 38 and Node 0.12.2 | **06.10.75** | UHD; UI 1920 × 1080 | Historical42 navigation/playback measurements with documented limitations; build43/44 targeted checks and personal build45 navigation/resource/native-trailer checks with private artwork; see the exact candidate split in validation. |
 
-No other models are listed as tested yet. The public binary has package/CI checks but has not received a separate full TV performance/playback qualification. See [validation evidence](UJ630/VALIDATION.md) and [release44 scope](UJ630/RELEASE-44.md).
+No other models are listed as tested yet. The public binary has package/CI checks but has not received a separate full TV performance/playback qualification. See [validation evidence](UJ630/VALIDATION.md) and [release45 scope](UJ630/RELEASE-45.md).
 
 ## Identify your TV before installing
 

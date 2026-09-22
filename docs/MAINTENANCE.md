@@ -18,7 +18,7 @@ These rules protect Git references. They do not make release assets immutable or
 
 ## Releases and privacy
 
-Build44 uses tag `1.1.2-webos3.44`, label `webos3-public.44` and `Nuvio-1.1.2-webOS3-44-1080p.ipk`. Nuvio's upstream version remains 1.1.2. The older build43 `UJ630` tag, IPK and checksum remain unchanged and available for rollback. The name change does not qualify another TV model.
+Build45 uses tag `1.1.2-webos3.45`, label `webos3-public.45` and `Nuvio-1.1.2-webOS3-45-1080p.ipk`. Nuvio's upstream version remains 1.1.2. Build44 and the older build43 tag, IPK and checksum remain unchanged and available for rollback. This release does not qualify another TV model.
 
 A release must point to its actual source revision, include the package checksum/provenance, and state validation limits. Never publish private artwork, account exports, configured personal addon URLs, sessions or API keys. The public builder accepts only the hash-pinned upstream client package and rejects personal configuration/artwork.
 

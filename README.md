@@ -8,7 +8,7 @@
 [![Release](https://img.shields.io/github/v/release/tommysuzanne/nuvio-webos-3?label=download)](https://github.com/tommysuzanne/nuvio-webos-3/releases/latest)
 [![GPLv3](https://img.shields.io/badge/license-GPLv3-blue.svg)](LICENSE)
 
-**[Download the IPK](https://github.com/tommysuzanne/nuvio-webos-3/releases/latest)** · [Install](docs/UJ630/INSTALLATION.md) · [Compatibility](docs/COMPATIBILITY.md) · [What’s new](docs/UJ630/RELEASE-44.md) · [Français](README.fr.md)
+**[Download the IPK](https://github.com/tommysuzanne/nuvio-webos-3/releases/latest)** · [Install](docs/UJ630/INSTALLATION.md) · [Compatibility](docs/COMPATIBILITY.md) · [What’s new](docs/UJ630/RELEASE-45.md) · [Français](README.fr.md)
 
 ## Why this version exists
 
@@ -30,7 +30,7 @@ Those initial reports concern this TV and early local builds—not a controlled 
 | Collections kept in sync | Refresh on eligible Home/foreground entry after one minute, or manually; invalid/stale responses are rejected. |
 | Everyday fixes | Corrected accents and addon reconciliation, plus 4K-first source ordering. |
 
-**New in build44:** native VF/VO trailers, faster detail revisits, persistent Library filters and fixes for empty collection tabs and the MP4 startup probe. [What’s new and how to update](docs/UJ630/RELEASE-44.md).
+**New in build45:** fixes for Library navigation getting stuck, selective profile artwork loading, bounded detail history and subtitle caches, and image release around trailers. [What’s new and how to update](docs/UJ630/RELEASE-45.md).
 
 **Tradeoffs:** collections are organized on another device; performance settings are fixed; updates are installed manually. Heavy or incompatible covers may use a title card. HTTP addons and native playback remain available; incompatible executable/P2P plugins are blocked. A 4K source still needs codecs and bandwidth your TV supports.
 
@@ -40,7 +40,7 @@ Prefer another project if you need the default animated presentation, TV-side co
 
 | TV | Status |
 | --- | --- |
-| **LG 49UJ630V-ZA**, UHD, firmware 06.10.75 | Installation tested; build43 navigation/settings and personal build44 detail/trailer checks passed. Qualification limits below. |
+| **LG 49UJ630V-ZA**, UHD, firmware 06.10.75 | Installation tested; personal build45 received navigation, resource-lifetime and native-trailer checks. Qualification limits below. |
 | Other **UHD / 4K webOS 3.0 / 3.5** models | Unverified; model reports welcome. |
 | **Full HD webOS 3.x** | Requires a different graphics package; this 1080p IPK is not qualified. |
 | **webOS 1/2** | Unsupported. |
@@ -68,9 +68,11 @@ Historical **build42**, 49UJ630V-ZA at **1080p**, three controlled runs:
 | Warm first usable Home | Approximately **1.59–1.86 s** |
 | Navigation frame interval p99 | **19.780–33.611 ms** |
 
-The revised p99 limit is 35 ms; failures against the original 33 ms limit remain documented. Build43 and the personal build44 candidate received targeted TV checks with private artwork. **The downloadable public binary has not received a separate full TV qualification.** Long-term memory stability, precise HEVC seeking and complete standby/restart coverage remain open.
+The revised p99 limit is 35 ms; failures against the original 33 ms limit remain documented. Personal build45 candidates received 40 navigation cycles on RC3, then three cycles and a trailer check on final RC4, with private artwork. **The downloadable public binary has not received a separate full TV qualification.** Long-term memory stability, precise HEVC seeking and complete standby/restart coverage remain open.
 
-**47 UJ630 regression groups and 102 native JavaScript tests** run with build/legacy checks in CI. These do not establish zero lag. [Full measurements, refactor size gains and limits](docs/UJ630/VALIDATION.md).
+**48 UJ630 regression groups and 102 native JavaScript tests** run with build/legacy checks in CI. These do not establish zero lag. [Full measurements, refactor size gains and limits](docs/UJ630/VALIDATION.md).
+
+[Resource ownership and memory limits](docs/UJ630/RESOURCE-LIFECYCLE.md).
 
 ## Build, contribute or get help
 

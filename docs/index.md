@@ -11,7 +11,8 @@ Start with the [English README](../README.md) or [French README](../README.fr.md
 | Resolve common questions | [FAQ](FAQ.md) |
 | Prepare optional local thumbnails | [Artwork guide](UJ630/ARTWORK.md) |
 | Assess performance evidence and open qualification work | [Validation](UJ630/VALIDATION.md) |
-| Inspect the current app changes | [Build44: what’s new / nouveautés](UJ630/RELEASE-44.md), [changelog](../CHANGELOG.md) |
+| Understand resource ownership, cancellation and memory limits | [Resource lifetime](UJ630/RESOURCE-LIFECYCLE.md) |
+| Inspect the current app changes | [Build45: what’s new / nouveautés](UJ630/RELEASE-45.md), [changelog](../CHANGELOG.md) |
 | Check authorship and pinned upstream references | [NOTICE](../NOTICE.md) |
 | Contribute code or work with an agent | [CONTRIBUTING](../CONTRIBUTING.md), then [AGENTS](../AGENTS.md) |
 | Understand branch/tag protections and release identity | [Maintenance](MAINTENANCE.md) |

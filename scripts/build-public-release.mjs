@@ -6,7 +6,7 @@ import {fileURLToPath} from 'node:url';
 import {execFileSync,spawnSync} from 'node:child_process';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
-const label='webos3-public.44';
+const label='webos3-public.45';
 const upstreamUrl='https://github.com/iqui27/NuvioTVSmart-legacy-webos/releases/download/webos3-exp.32/NuvioTV-webOS3-exp32.ipk';
 const upstreamSha='5f74f091f102f490be9407e4981cf3ef4a55bee719c632f711e1506e0645a160';
 const output=path.resolve(process.env.NUVIO_RELEASE_DIR||path.join(root,'../nuvio-public-release'));
@@ -41,7 +41,7 @@ try {
  if(result.status!==0)throw Error('Public package build failed');
  const packageBytes=fs.readFileSync(path.join(root,'space.nuvio.webos_1.1.2_all.ipk'));
  fs.mkdirSync(output,{recursive:true});
- const filename='Nuvio-1.1.2-webOS3-44-1080p.ipk';
+ const filename='Nuvio-1.1.2-webOS3-45-1080p.ipk';
  fs.writeFileSync(path.join(output,filename),packageBytes);
  fs.writeFileSync(path.join(output,'SHA256SUMS'),sha(packageBytes)+'  '+filename+'\n');
  let sourceCommit='unavailable',sourceDirty=null;

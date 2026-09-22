@@ -1,3 +1,4 @@
+import { requestLocalMediaRead } from "../../core/network/localMediaRead.js";
 import { requestWebOsCompanionService } from "../../platform/webos/webosCompanionService.js";
 
 const REQUEST_TIMEOUT_MS = 30000;
@@ -39,8 +40,8 @@ export const localMediaBitmapSubtitleRepository = {
       return preparedSources.get(targetUrl);
     }
     const request = withTimeout(
-      requestWebOsCompanionService({
-        method: "bitmapSubtitlePrepare",
+      requestLocalMediaRead({
+        method: "bitmapSubtitlePrepare", timeoutMs: REQUEST_TIMEOUT_MS,
         parameters: { url: targetUrl }
       }),
       REQUEST_TIMEOUT_MS
@@ -75,8 +76,8 @@ export const localMediaBitmapSubtitleRepository = {
     let result;
     try {
       result = await withTimeout(
-        requestWebOsCompanionService({
-          method: "bitmapSubtitleWindow",
+        requestLocalMediaRead({
+          method: "bitmapSubtitleWindow", timeoutMs: WINDOW_REQUEST_TIMEOUT_MS,
           parameters: {
             url: targetUrl,
             trackNumber: targetTrack,
@@ -87,6 +88,7 @@ export const localMediaBitmapSubtitleRepository = {
         WINDOW_REQUEST_TIMEOUT_MS
       );
     } catch (error) {
+      if (error?.name === "AbortError") throw error;
       throw new Error(getRequestErrorMessage(error, "Bitmap subtitle extraction failed"));
     }
     const payload = result?.payload || {};

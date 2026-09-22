@@ -594,8 +594,14 @@ async function bootstrapApp() {
     window.addEventListener("keydown", noteUj630Input, true);
     const visibility = () => {
       const hidden = document.hidden || document.webkitHidden; setUj630ActivityHidden(Boolean(hidden));
-      if (hidden) Uj630Images.releaseAll();
-      else { const screen = Router.getCurrentScreen(); screen?.ujBrowse?.updateWindow(true); screen?.ujResults?.updateWindow(true); }
+      Router.getCurrentScreen()?.onLegacyVisibility?.(Boolean(hidden));
+      if (hidden) { Uj630Images.releaseAll(); const screen = Router.getCurrentScreen(); if (screen?.updateImageWindow) Uj630Images.releaseTree(screen.container); }
+      else {
+        const screen = Router.getCurrentScreen();
+        screen?.ujBrowse?.updateWindow(true); screen?.ujResults?.updateWindow(true);
+        screen?.updateImageWindow?.(); screen?.scheduleVisibleProfileAssets?.();
+        if (screen?.container) Uj630Images.enqueueTree(screen.container, 0, "img[data-uj-managed]");
+      }
     };
     document.addEventListener("visibilitychange", visibility);
     document.addEventListener("webkitvisibilitychange", visibility);

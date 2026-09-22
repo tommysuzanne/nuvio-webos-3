@@ -14114,6 +14114,7 @@ export const HomeScreen = {
     this.posterHoldMenu = null;
     this.posterListPicker = null;
     this.persistCurrentFocusState();
+    this.lastMainFocus = null;
     this.homeLoadToken = (this.homeLoadToken || 0) + 1;
     this.cancelInitialHomeLoadTimeout();
     this._trackPaginationInFlight?.clear();

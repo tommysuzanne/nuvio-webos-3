@@ -1,3 +1,4 @@
+import { createUj630Cache } from "../../core/cache/uj630Caches.js";
 import { Platform } from "../../platform/index.js";
 import { TizenEngineFsService } from "../../platform/tizen/tizenEngineFsService.js";
 import {
@@ -24,7 +25,7 @@ const WEBOS_LUNA_TRACK_RETRY_DELAY_MS = 900;
 const WEBOS_LUNA_TRACK_PROBE_TIMEOUT_MS = 12000;
 
 let cachedLocalMediaServerPort = LOCAL_MEDIA_SERVER_PORT_CANDIDATES[0];
-const tracksCache = new Map();
+const tracksCache = createUj630Cache("tmdb", "media-tracks");
 const inFlightTrackRequests = new Map();
 
 function getCandidatePorts() {

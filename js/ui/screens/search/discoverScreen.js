@@ -325,6 +325,7 @@ export const DiscoverScreen = {
     this.updateCatalogOptions();
     this.pendingRestoreFocus = true;
     this.preserveViewportOnNextRender = false;
+    if (!Array.isArray(snapshot.items)) { this.nextSkip = 0; this.hasMore = true; return false; }
     return true;
   },
 

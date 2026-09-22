@@ -1,6 +1,7 @@
 import { PARENTAL_GUIDE_API_URL } from "../../config.js";
 
-const CACHE = new Map();
+import { createUj630Cache } from "../../core/cache/uj630Caches.js";
+const CACHE = createUj630Cache("tmdb", "parental-guide");
 
 function normalizeImdbId(value = "") {
   const candidate = String(value || "")

@@ -1,3 +1,4 @@
+import { supportsUj630Performance } from "../../platform/uj630Performance.js";
 import { LocalStore } from "../../core/storage/localStore.js";
 
 const AVATAR_CATALOG_KEY = "memberAvatarCatalogCache";
@@ -73,7 +74,7 @@ async function readAsset(key) {
         const blob = request.result?.blob;
         if (isBlobLike(blob)) {
           if (generation === storageGeneration) {
-            memoryAssets.set(key, blob);
+            if (!supportsUj630Performance()) memoryAssets.set(key, blob);
           }
           resolve(blob);
           return;
@@ -101,7 +102,7 @@ async function writeAsset(key, blob, shouldSave = null) {
     if (typeof shouldSave === "function" && !shouldSave()) {
       return false;
     }
-    memoryAssets.set(key, blob);
+    if (!supportsUj630Performance()) memoryAssets.set(key, blob);
     const database = await openDatabase();
     if (!database) {
       return true;

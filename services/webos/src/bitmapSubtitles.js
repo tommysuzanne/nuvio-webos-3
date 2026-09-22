@@ -1,3 +1,5 @@
+var subtitleCacheBudget = require("./subtitleCacheBudget");
+var ownedReads = new Map();
 var http = require("http");
 var https = require("https");
 var zlib = require("zlib");
@@ -139,13 +141,22 @@ function getCached(cache, key) {
   }
   cache.delete(key);
   cache.set(key, entry);
+  subtitleCacheBudget.touch(cache, key);
   return entry.value;
 }
 
 function setCached(cache, key, value, ttlMs, maxEntries) {
-  cache.delete(key);
-  cache.set(key, { value: value, expiresAt: Date.now() + ttlMs });
-  trimCache(cache, maxEntries);
+  subtitleCacheBudget.set(cache, key, value, ttlMs, maxEntries);
+}
+function beginOwnedRead(id) {
+  if (!/^[a-zA-Z0-9_-]{1,96}$/.test(String(id || ""))) return null;
+  if (ownedReads.size >= 2) throw bitmapSubtitleError("SUBTITLE_BUSY", "Subtitle reads busy");
+  var context = { cancelled:false, requests:new Set() }; ownedReads.set(id, context); return context;
+}
+function endOwnedRead(id) { ownedReads.delete(id); }
+function cancelOwnedRead(id) {
+  var context = ownedReads.get(id); if (!context) return false;
+  cancelRequestContext(context); ownedReads.delete(id); return true;
 }
 
 function requestRange(url, start, end, maxBytes, redirects, requestContext) {
@@ -163,10 +174,12 @@ function requestRange(url, start, end, maxBytes, redirects, requestContext) {
       return;
     }
 
+    var redirectedRead = false;
     var transport = parsed.protocol === "https:" ? https : http;
     var req = transport.request(
-      parsed,
       {
+        protocol: parsed.protocol, hostname: parsed.hostname, port: parsed.port || undefined,
+        path: parsed.pathname + parsed.search,
         method: "GET",
         headers: {
           Range: "bytes=" + start + "-" + end,
@@ -188,6 +201,7 @@ function requestRange(url, start, end, maxBytes, redirects, requestContext) {
             );
             return;
           }
+          redirectedRead = true;
           var redirected = new URL(res.headers.location, parsed).href;
           requestRange(redirected, start, end, maxBytes, redirectCount + 1, requestContext).then(
             resolve,
@@ -214,12 +228,9 @@ function requestRange(url, start, end, maxBytes, redirects, requestContext) {
         res.on("data", function (chunk) {
           received += chunk.length;
           if (received > maxBytes) {
-            req.destroy(
-              bitmapSubtitleError(
-                "RANGE_TOO_LARGE",
-                "Bitmap subtitle range exceeded its safety limit"
-              )
-            );
+            chunks.length = 0;
+            reject(bitmapSubtitleError("RANGE_TOO_LARGE", "Bitmap subtitle range exceeded its safety limit"));
+            req.destroy();
             return;
           }
           chunks.push(chunk);
@@ -244,10 +255,19 @@ function requestRange(url, start, end, maxBytes, redirects, requestContext) {
       }
     );
 
+    req._nuvioCancel = function () {
+      if (requestContext) requestContext.requests.delete(req);
+      reject(bitmapSubtitleError("REQUEST_SUPERSEDED", "Subtitle request cancelled"));
+      req.destroy();
+    };
     if (requestContext) requestContext.requests.add(req);
+    req.on("close", function () {
+      if (requestContext) requestContext.requests.delete(req);
+      if (!redirectedRead) reject(bitmapSubtitleError("RANGE_CLOSED", "Subtitle range closed"));
+    });
 
     req.setTimeout(REQUEST_TIMEOUT_MS, function () {
-      req.destroy(bitmapSubtitleError("RANGE_TIMEOUT", "Bitmap subtitle range request timed out"));
+      reject(bitmapSubtitleError("RANGE_TIMEOUT", "Bitmap subtitle range request timed out")); req.destroy();
     });
     req.on("error", function (error) {
       if (requestContext) requestContext.requests.delete(req);
@@ -495,13 +515,13 @@ function parseCues(data, timecodeScaleNs) {
   return cues;
 }
 
-async function loadMetadata(mediaUrl) {
+async function loadMetadata(mediaUrl, requestContext) {
   var cached = getCached(metadataCache, mediaUrl);
   if (cached) return cached;
-  if (metadataRequests.has(mediaUrl)) return metadataRequests.get(mediaUrl);
+  if (!requestContext && metadataRequests.has(mediaUrl)) return metadataRequests.get(mediaUrl);
 
   var request = (async function () {
-    var head = await requestRange(mediaUrl, 0, HEADER_PROBE_BYTES - 1, HEADER_PROBE_BYTES);
+    var head = await requestRange(mediaUrl, 0, HEADER_PROBE_BYTES - 1, HEADER_PROBE_BYTES, 0, requestContext);
     if (!head.totalSize)
       throw bitmapSubtitleError("SIZE_UNKNOWN", "Bitmap subtitle source size is unknown");
     var metadata = parseHeader(head.buffer, head.totalSize);
@@ -510,7 +530,7 @@ async function loadMetadata(mediaUrl) {
       mediaUrl,
       metadata.cuesOffset,
       cuesProbeEnd,
-      CUES_PROBE_BYTES
+      CUES_PROBE_BYTES, 0, requestContext
     );
     var cuesHeader = readElement(cuesProbe.buffer, 0, cuesProbe.buffer.length, true);
     if (!cuesHeader || cuesHeader.id !== ID_CUES || cuesHeader.totalSize == null) {
@@ -529,7 +549,7 @@ async function loadMetadata(mediaUrl) {
           mediaUrl,
           metadata.cuesOffset,
           metadata.cuesOffset + cuesHeader.totalSize - 1,
-          MAX_CUES_BYTES
+          MAX_CUES_BYTES, 0, requestContext
         )
       ).buffer;
     }
@@ -543,15 +563,16 @@ async function loadMetadata(mediaUrl) {
     ).sort(function (a, b) {
       return a - b;
     });
+    if (requestContext && requestContext.cancelled) throw bitmapSubtitleError("REQUEST_SUPERSEDED", "Cancelled");
     setCached(metadataCache, mediaUrl, metadata, METADATA_CACHE_TTL_MS, MAX_METADATA_CACHE_ENTRIES);
     return metadata;
   })();
 
-  metadataRequests.set(mediaUrl, request);
+  if (!requestContext) metadataRequests.set(mediaUrl, request);
   try {
     return await request;
   } finally {
-    metadataRequests.delete(mediaUrl);
+    if (metadataRequests.get(mediaUrl) === request) metadataRequests.delete(mediaUrl);
   }
 }
 
@@ -1824,7 +1845,7 @@ function buildPgsWindowPayload(frames) {
 }
 
 async function buildWindow(mediaUrl, trackNumber, startSeconds, endSeconds, requestContext) {
-  var metadata = await loadMetadata(mediaUrl);
+  var metadata = await loadMetadata(mediaUrl, requestContext);
   var track = metadata.tracks.find(function (entry) {
     return entry.number === trackNumber && isBitmapSubtitleTrack(entry);
   });
@@ -1905,7 +1926,7 @@ async function buildTextWindow(
   includeAssBody,
   requestContext
 ) {
-  var metadata = await loadMetadata(mediaUrl);
+  var metadata = await loadMetadata(mediaUrl, requestContext);
   var track = findTextSubtitleTrack(metadata, trackNumber, trackOrdinal);
   if (!track) {
     throw bitmapSubtitleError(
@@ -1975,9 +1996,10 @@ async function getEmbeddedTextSubtitleWindow(options) {
     cancelActiveTextWindowRequest(activeKey);
     return cached;
   }
-  if (textWindowRequests.has(cacheKey)) return textWindowRequests.get(cacheKey);
+  if (!options.requestContext && textWindowRequests.has(cacheKey)) return textWindowRequests.get(cacheKey);
   cancelActiveTextWindowRequest(activeKey);
-  var requestContext = { cancelled: false, requests: new Set(), cacheKey: cacheKey };
+  var requestContext = options.requestContext || { cancelled: false, requests: new Set() };
+  requestContext.cacheKey = cacheKey;
   activeTextWindowRequests.set(activeKey, requestContext);
   var request = buildTextWindow(
     mediaUrl,
@@ -1991,6 +2013,7 @@ async function getEmbeddedTextSubtitleWindow(options) {
   textWindowRequests.set(cacheKey, request);
   try {
     var result = await request;
+    if (requestContext.cancelled) throw bitmapSubtitleError("REQUEST_SUPERSEDED", "Cancelled");
     setCached(textWindowCache, cacheKey, result, WINDOW_CACHE_TTL_MS, MAX_WINDOW_CACHE_ENTRIES);
     return result;
   } finally {
@@ -2022,18 +2045,19 @@ async function getBitmapSubtitleWindow(options) {
     cancelActivePgsWindowRequest(activeKey);
     return cached;
   }
-  if (windowRequests.has(cacheKey)) return windowRequests.get(cacheKey);
+  if (!options.requestContext && windowRequests.has(cacheKey)) return windowRequests.get(cacheKey);
   cancelActivePgsWindowRequest(activeKey);
-  var requestContext = { cancelled: false, requests: new Set() };
+  var requestContext = options.requestContext || { cancelled: false, requests: new Set() };
   activePgsWindowRequests.set(activeKey, requestContext);
   var request = buildWindow(mediaUrl, trackNumber, bucketStart, bucketEnd, requestContext);
   windowRequests.set(cacheKey, request);
   try {
     var result = await request;
+    if (requestContext.cancelled) throw bitmapSubtitleError("REQUEST_SUPERSEDED", "Cancelled");
     setCached(windowCache, cacheKey, result, WINDOW_CACHE_TTL_MS, MAX_WINDOW_CACHE_ENTRIES);
     return result;
   } finally {
-    windowRequests.delete(cacheKey);
+    if (windowRequests.get(cacheKey) === request) windowRequests.delete(cacheKey);
     if (activePgsWindowRequests.get(activeKey) === requestContext) {
       activePgsWindowRequests.delete(activeKey);
     }
@@ -2071,16 +2095,15 @@ function cancelActiveTextWindowRequest(activeKey) {
 function cancelRequestContext(requestContext) {
   requestContext.cancelled = true;
   requestContext.requests.forEach(function (activeRequest) {
-    activeRequest.destroy(
-      bitmapSubtitleError("REQUEST_SUPERSEDED", "Bitmap subtitle request was superseded")
-    );
+    if (activeRequest._nuvioCancel) activeRequest._nuvioCancel();
+    else activeRequest.destroy(bitmapSubtitleError("REQUEST_SUPERSEDED", "Bitmap subtitle request was superseded"));
   });
   requestContext.requests.clear();
 }
 
 async function prepareBitmapSubtitleSource(options) {
   var mediaUrl = normalizeMediaUrl(options && options.url);
-  var metadata = await loadMetadata(mediaUrl);
+  var metadata = await loadMetadata(mediaUrl, options && options.requestContext);
   var bitmapTracks = metadata.tracks.filter(function (track) {
     return isBitmapSubtitleTrack(track);
   });
@@ -2099,6 +2122,8 @@ async function prepareBitmapSubtitleSource(options) {
 }
 
 function clearBitmapSubtitleCaches() {
+  Array.from(ownedReads.keys()).forEach(cancelOwnedRead);
+  subtitleCacheBudget.clear();
   metadataCache.clear();
   metadataRequests.clear();
   windowCache.clear();
@@ -2115,6 +2140,7 @@ function clearBitmapSubtitleCaches() {
 }
 
 module.exports = {
+  beginOwnedRead: beginOwnedRead, endOwnedRead: endOwnedRead, cancelOwnedRead: cancelOwnedRead, cacheStats: subtitleCacheBudget.stats,
   getBitmapSubtitleWindow: getBitmapSubtitleWindow,
   getEmbeddedTextSubtitleWindow: getEmbeddedTextSubtitleWindow,
   prepareBitmapSubtitleSource: prepareBitmapSubtitleSource,

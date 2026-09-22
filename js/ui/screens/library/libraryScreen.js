@@ -1,3 +1,5 @@
+import { supportsUj630Performance } from "../../../platform/uj630Performance.js";
+import { Uj630Images } from "../../../core/media/uj630Images.js";
 import { Router } from "../../navigation/router.js";
 import { ScreenUtils } from "../../navigation/screen.js";
 import { Environment } from "../../../platform/environment.js";
@@ -362,6 +364,7 @@ export const LibraryScreen = {
     this.focusZone = sidebarFocused ? "sidebar" : "content";
     if (!this.layoutPrefs?.modernSidebar) {
       setLegacySidebarExpanded(this.container, sidebarFocused);
+      this.ensureGridGeometry();
     }
     if (!sidebarFocused) {
       this.lastMainFocus = target;
@@ -383,6 +386,7 @@ export const LibraryScreen = {
   },
 
   renderLoading() {
+    if (supportsUj630Performance()) Uj630Images.releaseTree(this.container);
     this.container.innerHTML = `
       <div class="home-shell library-shell${this.libraryRouteEnterPending ? " library-route-enter" : ""}">
         ${this.renderSidebar()}
@@ -809,6 +813,7 @@ export const LibraryScreen = {
       if (cloudActionsMount instanceof HTMLElement) {
         cloudActionsMount.innerHTML = this.renderCloudActionButtons(state);
       }
+      if (supportsUj630Performance()) Uj630Images.releaseTree(cloudResultsMount);
       cloudResultsMount.outerHTML = `
         <div id="libraryCloudResultsMount">
           ${this.renderCloudLibraryContent(state)}
@@ -818,6 +823,7 @@ export const LibraryScreen = {
     } else {
       const contentMount = this.container.querySelector("#libraryContentAreaMount");
       if (contentMount instanceof HTMLElement) {
+        if (supportsUj630Performance()) Uj630Images.releaseTree(contentMount);
         contentMount.outerHTML = this.renderLibraryContentArea(state);
       }
     }
@@ -902,6 +908,34 @@ export const LibraryScreen = {
    * data-src + hidrata/libera do catalogSeeAllScreen; a margem de 1,5 tela do
    * helper tambem absorve o cabecalho/filtros acima da grade dentro do scroller.
    */
+  ensureGridGeometry() {
+    const grid = this.container?.querySelector(".library-grid");
+    const width = grid?.clientWidth || 0;
+    if (width !== this.gridWidth) this.buildGridRows();
+  },
+
+  updateImageWindow() {
+    if (!supportsUj630Performance()) return;
+    this.ensureGridGeometry();
+    const shell = this.container?.querySelector(".home-main");
+    if (!shell || document.hidden) return;
+    const viewport = shell.getBoundingClientRect();
+    (this.gridRows || []).forEach(row => {
+      const rect = row.nodes[0]?.getBoundingClientRect();
+      if (!rect) return;
+      const visible = rect.bottom > viewport.top && rect.top < viewport.bottom;
+      const nearby = rect.bottom > viewport.top - rect.height && rect.top < viewport.bottom + rect.height;
+      row.nodes.forEach(card => {
+        card.querySelectorAll(".library-grid-poster-image").forEach(image => {
+          if (nearby) image.setAttribute("data-uj-managed", "true");
+          else image.removeAttribute("data-uj-managed");
+        });
+        if (nearby) Uj630Images.enqueueTree(card, visible ? 0 : 1, ".library-grid-poster-image");
+        else Uj630Images.releaseTree(card);
+      });
+    });
+  },
+
   agendarAtualizacaoDeImagens() {
     if (this.atualizacaoDeImagensAgendada) {
       return;
@@ -909,6 +943,8 @@ export const LibraryScreen = {
     this.atualizacaoDeImagensAgendada = true;
     const executar = () => {
       this.atualizacaoDeImagensAgendada = false;
+      this.imageFrame = 0;
+      if (supportsUj630Performance()) { this.updateImageWindow(); return; }
       atualizarImagensDeGrade({
         shell: this.container?.querySelector(".home-main") || null,
         grade: this.container?.querySelector(".library-grid") || null,
@@ -917,9 +953,9 @@ export const LibraryScreen = {
       });
     };
     if (typeof requestAnimationFrame === "function") {
-      requestAnimationFrame(executar);
+      this.imageFrame = requestAnimationFrame(executar);
     } else {
-      setTimeout(executar, 16);
+      this.imageTimer = setTimeout(executar, 16);
     }
   },
 
@@ -1184,6 +1220,7 @@ export const LibraryScreen = {
       return;
     }
 
+    if (supportsUj630Performance()) Uj630Images.releaseTree(this.container);
     this.container.innerHTML = `
       <div class="home-shell library-shell${this.libraryRouteEnterPending ? " library-route-enter" : ""}" style="${escapeHtml(libraryStyle)}">
         ${this.renderSidebar()}
@@ -1567,6 +1604,7 @@ export const LibraryScreen = {
   },
 
   buildGridRows() {
+    this.gridWidth = this.container?.querySelector(".library-grid")?.clientWidth || 0;
     const cards = Array.from(
       this.container?.querySelectorAll(".library-grid-card.focusable") || []
     );
@@ -1577,6 +1615,7 @@ export const LibraryScreen = {
     if (!current || !current.matches?.(".library-grid-card.focusable")) {
       return null;
     }
+    this.ensureGridGeometry();
     const rows = this.gridRows || [];
     if (!rows.length) {
       return null;
@@ -2420,6 +2459,14 @@ export const LibraryScreen = {
   },
 
   cleanup() {
+    if (this.imageFrame) cancelAnimationFrame(this.imageFrame);
+    clearTimeout(this.imageTimer);
+    this.imageFrame = this.imageTimer = 0;
+    this.atualizacaoDeImagensAgendada = false;
+    Uj630Images.releaseTree(this.container);
+    this.lastMainFocus = null;
+    this.partialContentRefresh = null;
+    this.pendingActionRestore = this.pendingPickerRestore = null;
     resetDpadRepeat(this);
     this.cancelScheduledRender();
     this.clearClosingPicker();

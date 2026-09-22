@@ -104,7 +104,7 @@ export const SupabaseApi = {
     );
   },
 
-  downloadStorageObject(bucket, storagePath, useSession = true) {
+  downloadStorageObject(bucket, storagePath, useSession = true, options = {}) {
     assertSupabaseConfigured();
     const normalizedBucket = encodeURIComponent(String(bucket || "").trim());
     const normalizedPath = String(storagePath || "")
@@ -123,7 +123,8 @@ export const SupabaseApi = {
           method: "GET",
           headers: buildHeaders({}, useSession),
           includeSessionAuth: useSession,
-          responseType: "blob"
+          responseType: "blob",
+          signal: options.signal
         }
       )
     );

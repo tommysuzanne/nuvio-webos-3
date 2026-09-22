@@ -5,6 +5,7 @@ let clock=1000,frames=[],assignments=0;const assignedAt=[];const timeouts=new Ma
 const code=fs.readFileSync(new URL('../js/core/media/uj630Images.js',import.meta.url),'utf8').replace(/^import .*;\n/gm,'').replace(/export /g,'');
 const context={createUj630Cache:()=>new Map(),tryAcquireUj630ReadSlot:()=>()=>{},onUj630ReadSlotAvailable:()=>{},UJ630_BUDGETS,Map,Set,Math,Date:{now:()=>clock},Array,URL,document:{documentElement:{contains:n=>n.connected},querySelectorAll:()=>[]},UJ630_ARTWORK:{},tmdbImageAtSize,normalizeImageUrl:x=>"http://127.0.0.1:2710/image-proxy?url="+encodeURIComponent(x),onWebOsImageProxyReady:()=>{},retainWebOsImageProxy:()=>{},releaseWebOsImageProxy:()=>{},
 requestAnimationFrame:fn=>{frames.push(fn);return frames.length;},cancelAnimationFrame:()=>{frames=[];},setTimeout:(fn,delay=0)=>{const id=nextTimer++;timeouts.set(id,{fn,due:clock+delay});return id;},clearTimeout:id=>timeouts.delete(id)};
+context.Uj630MemberAssets = {stats:() => ({decodedBytes:0})};
 const images=vm.runInNewContext(code+'\nUj630Images;',context);
 function node(url,width=342,height=513){const handlers={};const classes=new Set();let src='';return {connected:true,dataset:{src:url},naturalWidth:width,naturalHeight:height,classList:{contains:c=>classes.has(c),add:c=>classes.add(c),remove:c=>classes.delete(c)},
 get src(){return src},set src(v){src=v;assignments++;assignedAt.push(clock);},getAttribute:()=>src,removeAttribute:name=>{if(name==='src')src=''},addEventListener:(t,f)=>handlers[t]=f,removeEventListener:t=>delete handlers[t],emit:t=>handlers[t]?.()};}

@@ -1,3 +1,5 @@
+import { supportsUj630Performance } from "../../../platform/uj630Performance.js";
+import { Uj630MemberAssets } from "../../../core/media/uj630MemberAssets.js";
 import { MemberCatalogStorage } from "../../local/memberCatalogStorage.js";
 import { SupabaseApi } from "./supabaseApi.js";
 import { createStorageAssetUrl, revokeStorageAssetUrl } from "./storageAsset.js";
@@ -14,7 +16,7 @@ const objectUrls = new Set();
 const listeners = new Set();
 
 function mapBackground(row = {}) {
-  return {
+  const mapped = {
     id: String(row.id || "").trim(),
     displayName: String(row.display_name || row.displayName || row.name || "Background"),
     storagePath: String(row.storage_path || row.storagePath || "").trim(),
@@ -22,6 +24,8 @@ function mapBackground(row = {}) {
     assetVersion: Number(row.asset_version || row.assetVersion || 1) || 1,
     imageUrl: null
   };
+  const previous = supportsUj630Performance() && (remoteCatalog || []).find(item => item.id === mapped.id && item.assetVersion === mapped.assetVersion && item.storagePath === mapped.storagePath);
+  return previous ? Object.assign(previous, mapped, {imageUrl:previous.imageUrl}) : mapped;
 }
 
 function hydrateStoredCatalog() {
@@ -56,6 +60,20 @@ function assetKey(item) {
 async function loadAndPublish(item) {
   if (!item?.id || item.imageUrl) {
     return item?.imageUrl || null;
+  }
+  if (supportsUj630Performance()) {
+    const generation = cacheGeneration;
+    const url = await Uj630MemberAssets.load(`background:${assetKey(item)}`, async signal => {
+      const saved = await MemberCatalogStorage.loadAsset("profile-background", item.id, item.assetVersion);
+      if (signal.aborted) return null;
+      if (saved) return saved;
+      const blob = await SupabaseApi.downloadStorageObject(PROFILE_BACKGROUND_BUCKET, item.storagePath, true, {signal});
+      if (blob && !signal.aborted && generation === cacheGeneration)
+        await MemberCatalogStorage.saveAsset("profile-background", item.id, item.assetVersion, blob, {shouldSave:() => !signal.aborted && generation === cacheGeneration});
+      return blob;
+    }, () => { item.imageUrl = null; });
+    if (generation === cacheGeneration && url) { item.imageUrl = url; notify(); }
+    return url;
   }
   const key = assetKey(item);
   if (assetPromises.has(key)) {
@@ -169,12 +187,17 @@ async function preloadCatalog(catalog, selectedId = null) {
   if (selected) {
     await loadAndPublish(selected);
   }
+  if (supportsUj630Performance()) return;
   await Promise.all(
     catalog.filter((item) => item !== selected).map((item) => loadAndPublish(item))
   );
 }
 
 export const ProfileBackgroundRepository = {
+  assetKey(id) {
+    const item = this.getCatalog().find(entry => entry.id === String(id || ""));
+    return item ? `background:${assetKey(item)}` : "";
+  },
   async ensureLoaded() {
     hydrateStoredCatalog();
     const hadCatalog = Array.isArray(remoteCatalog);

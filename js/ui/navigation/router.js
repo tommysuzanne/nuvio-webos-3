@@ -734,7 +734,9 @@ export const Router = {
 
     // Cleanup current
     const previousRoute = this.current;
-    const shouldSkipPush = skipStackPush || NON_BACKSTACK_ROUTES.has(previousRoute);
+    const legacyRoot = supportsUj630Performance() && ["home", "library", "search", "discover", "settings", "profileSelection"].includes(routeName);
+    if (legacyRoot) this.stack.length = 0;
+    const shouldSkipPush = skipStackPush || legacyRoot || NON_BACKSTACK_ROUTES.has(previousRoute);
     if (this.current && this.current !== routeName) {
       this.captureCurrentRouteState();
       this.routes[this.current]?.cleanup?.();
