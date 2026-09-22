@@ -14,6 +14,7 @@ const context=vm.createContext({Map,Set,Array,Math,Promise,Error,AbortController
  fetch:(url,{signal})=>new Promise((resolve,reject)=>{const request={url,signal,reply:()=>resolve({ok:true,headers:{get:()=> '1'},blob:async()=>({size:1024})})};signal.addEventListener('abort',()=>reject(Object.assign(Error('aborted'),{name:'AbortError'})));requests.push(request)})});
 for(const [file,exports] of [['js/platform/uj630Activity.js','isUj630ActivityHidden,captureUj630Owner,onUj630ActivityChange,shouldDeferUj630Work,noteUj630Input,setUj630ActivityRoute'],['js/core/network/uj630ReadContext.js','tryAcquireUj630ReadSlot,onUj630ReadSlotAvailable,createUj630ReadContext,withUj630Read,uj630ReadStats']])Object.assign(context,vm.runInContext('(function(){'+strip(file)+';return {'+exports+'};})()',context));
 context.setUj630ActivityRoute('home');
+context.Uj630MemberAssets = {stats:() => ({decodedBytes:0})};
 const images=vm.runInContext('(function(){'+strip('js/core/media/uj630Images.js')+';return Uj630Images;})()',context);
 const tick=async(ms=34)=>{clock+=ms;for(const [id,t] of [...timers])if(t.at<=clock){timers.delete(id);t.fn()};const ready=[...frames];frames.clear();ready.forEach(([,fn])=>fn());for(let i=0;i<20;i++)await Promise.resolve()};
 const visible=node();visible.dataset.src=url;const root={classList:{contains:()=>false},querySelectorAll:()=>[visible]};

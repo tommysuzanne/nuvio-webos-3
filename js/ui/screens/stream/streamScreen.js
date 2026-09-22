@@ -3835,5 +3835,6 @@ export const StreamScreen = {
     this.focusedElement = null;
     this.streamLastNavigationRepeatAt = 0;
     ScreenUtils.hide(this.container);
+    this.streams = []; this.meta = null;
   }
 };

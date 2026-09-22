@@ -1,0 +1,1029 @@
+{
+  "date": "2026-09-22",
+  "hardware": {
+    "model": "LG 49UJ630V-ZA",
+    "firmware": "06.10.75",
+    "ui": "1920x1080",
+    "engine": "Chromium 38",
+    "service": "Node 0.12.2"
+  },
+  "scope": "Sanitized personal-candidate observations. Private configuration/artwork differ from the public release. Not total-process or long-duration qualification.",
+  "candidates": {
+    "45-rc3": {
+      "completedCycles": 30,
+      "unexpectedProfileReset": false,
+      "rawEvidenceSha256": "8ecb1a835f8a5c791e49ee57ec23c25c5348dc63390f340622893e87b03c9b6e",
+      "samples": [
+        {
+          "label": "home-initial",
+          "route": "home",
+          "systemAvailableKiB": 172552,
+          "dom": {
+            "documents": 1,
+            "nodes": 665,
+            "jsEventListeners": 84
+          },
+          "imageDecodedBytesEstimate": 30056712,
+          "trackedImages": 36,
+          "detachedRootsFound": 0,
+          "navigationStackDepth": 0
+        },
+        {
+          "label": "library-loaded",
+          "route": "library",
+          "systemAvailableKiB": 179068,
+          "dom": {
+            "documents": 1,
+            "nodes": 2099,
+            "jsEventListeners": 187
+          },
+          "imageDecodedBytesEstimate": 19487824,
+          "trackedImages": 24,
+          "detachedRootsFound": 0,
+          "navigationStackDepth": 0
+        },
+        {
+          "label": "detail-1",
+          "route": "detail",
+          "systemAvailableKiB": 170696,
+          "dom": {
+            "documents": 1,
+            "nodes": 2285,
+            "jsEventListeners": 222
+          },
+          "imageDecodedBytesEstimate": 1048576,
+          "trackedImages": 0,
+          "detachedRootsFound": 0,
+          "navigationStackDepth": 1
+        },
+        {
+          "label": "home-1",
+          "route": "home",
+          "systemAvailableKiB": 151984,
+          "dom": {
+            "documents": 1,
+            "nodes": 3846,
+            "jsEventListeners": 263
+          },
+          "imageDecodedBytesEstimate": 18086488,
+          "trackedImages": 29,
+          "detachedRootsFound": 0,
+          "navigationStackDepth": 0
+        },
+        {
+          "label": "home-2",
+          "route": "home",
+          "systemAvailableKiB": 165268,
+          "dom": {
+            "documents": 1,
+            "nodes": 6796,
+            "jsEventListeners": 340
+          },
+          "imageDecodedBytesEstimate": 10538648,
+          "trackedImages": 21,
+          "detachedRootsFound": 0,
+          "navigationStackDepth": 0
+        },
+        {
+          "label": "home-3",
+          "route": "home",
+          "systemAvailableKiB": 157996,
+          "dom": {
+            "documents": 1,
+            "nodes": 2861,
+            "jsEventListeners": 116
+          },
+          "imageDecodedBytesEstimate": 22062728,
+          "trackedImages": 26,
+          "detachedRootsFound": 0,
+          "navigationStackDepth": 0
+        },
+        {
+          "label": "home-4",
+          "route": "home",
+          "systemAvailableKiB": 156624,
+          "dom": {
+            "documents": 1,
+            "nodes": 6218,
+            "jsEventListeners": 223
+          },
+          "imageDecodedBytesEstimate": 22062728,
+          "trackedImages": 30,
+          "detachedRootsFound": 0,
+          "navigationStackDepth": 0
+        },
+        {
+          "label": "home-5",
+          "route": "home",
+          "systemAvailableKiB": 152248,
+          "dom": {
+            "documents": 1,
+            "nodes": 9532,
+            "jsEventListeners": 318
+          },
+          "imageDecodedBytesEstimate": 22062728,
+          "trackedImages": 25,
+          "detachedRootsFound": 0,
+          "navigationStackDepth": 0
+        },
+        {
+          "label": "home-6",
+          "route": "home",
+          "systemAvailableKiB": 127632,
+          "dom": {
+            "documents": 1,
+            "nodes": 12952,
+            "jsEventListeners": 417
+          },
+          "imageDecodedBytesEstimate": 12425608,
+          "trackedImages": 24,
+          "detachedRootsFound": 0,
+          "navigationStackDepth": 0
+        },
+        {
+          "label": "home-7",
+          "route": "home",
+          "systemAvailableKiB": 142888,
+          "dom": {
+            "documents": 1,
+            "nodes": 2624,
+            "jsEventListeners": 130
+          },
+          "imageDecodedBytesEstimate": 18086488,
+          "trackedImages": 28,
+          "detachedRootsFound": 0,
+          "navigationStackDepth": 0
+        },
+        {
+          "label": "home-8",
+          "route": "home",
+          "systemAvailableKiB": 135668,
+          "dom": {
+            "documents": 1,
+            "nodes": 2633,
+            "jsEventListeners": 133
+          },
+          "imageDecodedBytesEstimate": 21859928,
+          "trackedImages": 32,
+          "detachedRootsFound": 0,
+          "navigationStackDepth": 0
+        },
+        {
+          "label": "home-9",
+          "route": "home",
+          "systemAvailableKiB": 144212,
+          "dom": {
+            "documents": 1,
+            "nodes": 1500,
+            "jsEventListeners": 113
+          },
+          "imageDecodedBytesEstimate": 14312568,
+          "trackedImages": 22,
+          "detachedRootsFound": 0,
+          "navigationStackDepth": 0
+        },
+        {
+          "label": "home-10",
+          "route": "home",
+          "systemAvailableKiB": 131324,
+          "dom": {
+            "documents": 1,
+            "nodes": 1464,
+            "jsEventListeners": 117
+          },
+          "imageDecodedBytesEstimate": 12425608,
+          "trackedImages": 21,
+          "detachedRootsFound": 0,
+          "navigationStackDepth": 0
+        },
+        {
+          "label": "home-11",
+          "route": "home",
+          "systemAvailableKiB": 137152,
+          "dom": {
+            "documents": 1,
+            "nodes": 4974,
+            "jsEventListeners": 208
+          },
+          "imageDecodedBytesEstimate": 18086488,
+          "trackedImages": 28,
+          "detachedRootsFound": 0,
+          "navigationStackDepth": 0
+        },
+        {
+          "label": "home-12",
+          "route": "home",
+          "systemAvailableKiB": 129304,
+          "dom": {
+            "documents": 1,
+            "nodes": 8435,
+            "jsEventListeners": 322
+          },
+          "imageDecodedBytesEstimate": 21859928,
+          "trackedImages": 26,
+          "detachedRootsFound": 0,
+          "navigationStackDepth": 0
+        },
+        {
+          "label": "home-13",
+          "route": "home",
+          "systemAvailableKiB": 128448,
+          "dom": {
+            "documents": 1,
+            "nodes": 11872,
+            "jsEventListeners": 473
+          },
+          "imageDecodedBytesEstimate": 11885608,
+          "trackedImages": 26,
+          "detachedRootsFound": 0,
+          "navigationStackDepth": 0
+        },
+        {
+          "label": "home-14",
+          "route": "home",
+          "systemAvailableKiB": 135716,
+          "dom": {
+            "documents": 1,
+            "nodes": 15317,
+            "jsEventListeners": 598
+          },
+          "imageDecodedBytesEstimate": 10700432,
+          "trackedImages": 29,
+          "detachedRootsFound": 0,
+          "navigationStackDepth": 0
+        },
+        {
+          "label": "home-15",
+          "route": "home",
+          "systemAvailableKiB": 129216,
+          "dom": {
+            "documents": 1,
+            "nodes": 18386,
+            "jsEventListeners": 667
+          },
+          "imageDecodedBytesEstimate": 14474352,
+          "trackedImages": 22,
+          "detachedRootsFound": 0,
+          "navigationStackDepth": 0
+        },
+        {
+          "label": "home-16",
+          "route": "home",
+          "systemAvailableKiB": 131972,
+          "dom": {
+            "documents": 1,
+            "nodes": 21591,
+            "jsEventListeners": 769
+          },
+          "imageDecodedBytesEstimate": 14474352,
+          "trackedImages": 23,
+          "detachedRootsFound": 0,
+          "navigationStackDepth": 0
+        },
+        {
+          "label": "home-17",
+          "route": "home",
+          "systemAvailableKiB": 125580,
+          "dom": {
+            "documents": 1,
+            "nodes": 24753,
+            "jsEventListeners": 836
+          },
+          "imageDecodedBytesEstimate": 18248272,
+          "trackedImages": 26,
+          "detachedRootsFound": 0,
+          "navigationStackDepth": 0
+        },
+        {
+          "label": "home-18",
+          "route": "home",
+          "systemAvailableKiB": 112956,
+          "dom": {
+            "documents": 1,
+            "nodes": 28105,
+            "jsEventListeners": 935
+          },
+          "imageDecodedBytesEstimate": 14474352,
+          "trackedImages": 21,
+          "detachedRootsFound": 0,
+          "navigationStackDepth": 0
+        },
+        {
+          "label": "home-19",
+          "route": "home",
+          "systemAvailableKiB": 124432,
+          "dom": {
+            "documents": 1,
+            "nodes": 31044,
+            "jsEventListeners": 1008
+          },
+          "imageDecodedBytesEstimate": 16361312,
+          "trackedImages": 25,
+          "detachedRootsFound": 0,
+          "navigationStackDepth": 0
+        },
+        {
+          "label": "home-20",
+          "route": "home",
+          "systemAvailableKiB": 121756,
+          "dom": {
+            "documents": 1,
+            "nodes": 34066,
+            "jsEventListeners": 1081
+          },
+          "imageDecodedBytesEstimate": 22021712,
+          "trackedImages": 29,
+          "detachedRootsFound": 0,
+          "navigationStackDepth": 0
+        },
+        {
+          "label": "home-21",
+          "route": "home",
+          "systemAvailableKiB": 120780,
+          "dom": {
+            "documents": 1,
+            "nodes": 37029,
+            "jsEventListeners": 1161
+          },
+          "imageDecodedBytesEstimate": 22021712,
+          "trackedImages": 30,
+          "detachedRootsFound": 0,
+          "navigationStackDepth": 0
+        },
+        {
+          "label": "home-22",
+          "route": "home",
+          "systemAvailableKiB": 114796,
+          "dom": {
+            "documents": 1,
+            "nodes": 39921,
+            "jsEventListeners": 1238
+          },
+          "imageDecodedBytesEstimate": 12587392,
+          "trackedImages": 23,
+          "detachedRootsFound": 0,
+          "navigationStackDepth": 0
+        },
+        {
+          "label": "home-23",
+          "route": "home",
+          "systemAvailableKiB": 124628,
+          "dom": {
+            "documents": 1,
+            "nodes": 42981,
+            "jsEventListeners": 1311
+          },
+          "imageDecodedBytesEstimate": 18248272,
+          "trackedImages": 26,
+          "detachedRootsFound": 0,
+          "navigationStackDepth": 0
+        },
+        {
+          "label": "home-24",
+          "route": "home",
+          "systemAvailableKiB": 118180,
+          "dom": {
+            "documents": 1,
+            "nodes": 45906,
+            "jsEventListeners": 1384
+          },
+          "imageDecodedBytesEstimate": 18248272,
+          "trackedImages": 24,
+          "detachedRootsFound": 0,
+          "navigationStackDepth": 0
+        },
+        {
+          "label": "home-25",
+          "route": "home",
+          "systemAvailableKiB": 88964,
+          "dom": {
+            "documents": 1,
+            "nodes": 4362,
+            "jsEventListeners": 207
+          },
+          "imageDecodedBytesEstimate": 22021712,
+          "trackedImages": 23,
+          "detachedRootsFound": 0,
+          "navigationStackDepth": 0
+        },
+        {
+          "label": "home-26",
+          "route": "home",
+          "systemAvailableKiB": 98224,
+          "dom": {
+            "documents": 1,
+            "nodes": 2578,
+            "jsEventListeners": 134
+          },
+          "imageDecodedBytesEstimate": 12587392,
+          "trackedImages": 25,
+          "detachedRootsFound": 0,
+          "navigationStackDepth": 0
+        },
+        {
+          "label": "home-27",
+          "route": "home",
+          "systemAvailableKiB": 101312,
+          "dom": {
+            "documents": 1,
+            "nodes": 4549,
+            "jsEventListeners": 178
+          },
+          "imageDecodedBytesEstimate": 22021712,
+          "trackedImages": 30,
+          "detachedRootsFound": 0,
+          "navigationStackDepth": 0
+        },
+        {
+          "label": "home-28",
+          "route": "home",
+          "systemAvailableKiB": 90536,
+          "dom": {
+            "documents": 1,
+            "nodes": 7496,
+            "jsEventListeners": 257
+          },
+          "imageDecodedBytesEstimate": 18248272,
+          "trackedImages": 28,
+          "detachedRootsFound": 0,
+          "navigationStackDepth": 0
+        },
+        {
+          "label": "home-29",
+          "route": "home",
+          "systemAvailableKiB": 83448,
+          "dom": {
+            "documents": 1,
+            "nodes": 10468,
+            "jsEventListeners": 343
+          },
+          "imageDecodedBytesEstimate": 18248272,
+          "trackedImages": 26,
+          "detachedRootsFound": 0,
+          "navigationStackDepth": 0
+        },
+        {
+          "label": "detail-30",
+          "route": "detail",
+          "systemAvailableKiB": 101788,
+          "dom": {
+            "documents": 2,
+            "nodes": 1997,
+            "jsEventListeners": 119
+          },
+          "imageDecodedBytesEstimate": 5098248,
+          "trackedImages": 17,
+          "detachedRootsFound": 0,
+          "navigationStackDepth": 1
+        },
+        {
+          "label": "home-30",
+          "route": "home",
+          "systemAvailableKiB": 104240,
+          "dom": {
+            "documents": 1,
+            "nodes": 1435,
+            "jsEventListeners": 103
+          },
+          "imageDecodedBytesEstimate": 10700432,
+          "trackedImages": 21,
+          "detachedRootsFound": 0,
+          "navigationStackDepth": 0
+        },
+        {
+          "label": "home-settled",
+          "route": "home",
+          "systemAvailableKiB": 90624,
+          "dom": {
+            "documents": 1,
+            "nodes": 1548,
+            "jsEventListeners": 124
+          },
+          "imageDecodedBytesEstimate": 30218496,
+          "trackedImages": 36,
+          "detachedRootsFound": 0,
+          "navigationStackDepth": 0
+        },
+        {
+          "label": "home-after-diagnostic-gc",
+          "route": "home",
+          "systemAvailableKiB": 153836,
+          "dom": {
+            "documents": 1,
+            "nodes": 1548,
+            "jsEventListeners": 91
+          },
+          "imageDecodedBytesEstimate": 30218496,
+          "trackedImages": 36,
+          "detachedRootsFound": 0,
+          "navigationStackDepth": 0
+        }
+      ]
+    },
+    "45-rc3-repeat": {
+      "completedCycles": 10,
+      "unexpectedProfileReset": false,
+      "rawEvidenceSha256": "f4929839e3bab2c4ef3ca85c83779102dece174a7be51312d71aa093ab1def14",
+      "samples": [
+        {
+          "label": "home-initial",
+          "route": "home",
+          "systemAvailableKiB": 162488,
+          "dom": {
+            "documents": 1,
+            "nodes": 1548,
+            "jsEventListeners": 91
+          },
+          "imageDecodedBytesEstimate": 30218496,
+          "trackedImages": 36,
+          "detachedRootsFound": 0,
+          "navigationStackDepth": 0
+        },
+        {
+          "label": "library-loaded",
+          "route": "library",
+          "systemAvailableKiB": 177700,
+          "dom": {
+            "documents": 1,
+            "nodes": 2611,
+            "jsEventListeners": 100
+          },
+          "imageDecodedBytesEstimate": 17382472,
+          "trackedImages": 21,
+          "detachedRootsFound": 0,
+          "navigationStackDepth": 0
+        },
+        {
+          "label": "detail-1",
+          "route": "detail",
+          "systemAvailableKiB": 167656,
+          "dom": {
+            "documents": 1,
+            "nodes": 2878,
+            "jsEventListeners": 126
+          },
+          "imageDecodedBytesEstimate": 1048576,
+          "trackedImages": 3,
+          "detachedRootsFound": 0,
+          "navigationStackDepth": 1
+        },
+        {
+          "label": "home-1",
+          "route": "home",
+          "systemAvailableKiB": 147708,
+          "dom": {
+            "documents": 1,
+            "nodes": 4368,
+            "jsEventListeners": 179
+          },
+          "imageDecodedBytesEstimate": 18248272,
+          "trackedImages": 28,
+          "detachedRootsFound": 0,
+          "navigationStackDepth": 0
+        },
+        {
+          "label": "home-2",
+          "route": "home",
+          "systemAvailableKiB": 160280,
+          "dom": {
+            "documents": 1,
+            "nodes": 7312,
+            "jsEventListeners": 251
+          },
+          "imageDecodedBytesEstimate": 12587392,
+          "trackedImages": 22,
+          "detachedRootsFound": 0,
+          "navigationStackDepth": 0
+        },
+        {
+          "label": "home-3",
+          "route": "home",
+          "systemAvailableKiB": 143940,
+          "dom": {
+            "documents": 1,
+            "nodes": 10297,
+            "jsEventListeners": 315
+          },
+          "imageDecodedBytesEstimate": 18248272,
+          "trackedImages": 28,
+          "detachedRootsFound": 0,
+          "navigationStackDepth": 0
+        },
+        {
+          "label": "home-4",
+          "route": "home",
+          "systemAvailableKiB": 135496,
+          "dom": {
+            "documents": 1,
+            "nodes": 13727,
+            "jsEventListeners": 405
+          },
+          "imageDecodedBytesEstimate": 18248272,
+          "trackedImages": 28,
+          "detachedRootsFound": 0,
+          "navigationStackDepth": 0
+        },
+        {
+          "label": "home-5",
+          "route": "home",
+          "systemAvailableKiB": 128508,
+          "dom": {
+            "documents": 1,
+            "nodes": 17120,
+            "jsEventListeners": 479
+          },
+          "imageDecodedBytesEstimate": 18248272,
+          "trackedImages": 28,
+          "detachedRootsFound": 0,
+          "navigationStackDepth": 0
+        },
+        {
+          "label": "home-6",
+          "route": "home",
+          "systemAvailableKiB": 125904,
+          "dom": {
+            "documents": 1,
+            "nodes": 20689,
+            "jsEventListeners": 563
+          },
+          "imageDecodedBytesEstimate": 12587392,
+          "trackedImages": 25,
+          "detachedRootsFound": 0,
+          "navigationStackDepth": 0
+        },
+        {
+          "label": "home-7",
+          "route": "home",
+          "systemAvailableKiB": 131496,
+          "dom": {
+            "documents": 1,
+            "nodes": 2981,
+            "jsEventListeners": 135
+          },
+          "imageDecodedBytesEstimate": 18248272,
+          "trackedImages": 26,
+          "detachedRootsFound": 0,
+          "navigationStackDepth": 0
+        },
+        {
+          "label": "home-8",
+          "route": "home",
+          "systemAvailableKiB": 121224,
+          "dom": {
+            "documents": 1,
+            "nodes": 2629,
+            "jsEventListeners": 123
+          },
+          "imageDecodedBytesEstimate": 22021712,
+          "trackedImages": 28,
+          "detachedRootsFound": 0,
+          "navigationStackDepth": 0
+        },
+        {
+          "label": "home-9",
+          "route": "home",
+          "systemAvailableKiB": 133676,
+          "dom": {
+            "documents": 1,
+            "nodes": 3149,
+            "jsEventListeners": 136
+          },
+          "imageDecodedBytesEstimate": 14474352,
+          "trackedImages": 24,
+          "detachedRootsFound": 0,
+          "navigationStackDepth": 0
+        },
+        {
+          "label": "detail-10",
+          "route": "detail",
+          "systemAvailableKiB": 126448,
+          "dom": {
+            "documents": 3,
+            "nodes": 2073,
+            "jsEventListeners": 128
+          },
+          "imageDecodedBytesEstimate": 5070304,
+          "trackedImages": 18,
+          "detachedRootsFound": 0,
+          "navigationStackDepth": 1
+        },
+        {
+          "label": "home-10",
+          "route": "home",
+          "systemAvailableKiB": 129388,
+          "dom": {
+            "documents": 1,
+            "nodes": 1495,
+            "jsEventListeners": 100
+          },
+          "imageDecodedBytesEstimate": 12587392,
+          "trackedImages": 24,
+          "detachedRootsFound": 0,
+          "navigationStackDepth": 0
+        },
+        {
+          "label": "home-settled",
+          "route": "home",
+          "systemAvailableKiB": 121372,
+          "dom": {
+            "documents": 1,
+            "nodes": 1555,
+            "jsEventListeners": 100
+          },
+          "imageDecodedBytesEstimate": 30218496,
+          "trackedImages": 36,
+          "detachedRootsFound": 0,
+          "navigationStackDepth": 0
+        },
+        {
+          "label": "home-after-diagnostic-gc",
+          "route": "home",
+          "systemAvailableKiB": 171868,
+          "dom": {
+            "documents": 1,
+            "nodes": 1548,
+            "jsEventListeners": 91
+          },
+          "imageDecodedBytesEstimate": 30218496,
+          "trackedImages": 36,
+          "detachedRootsFound": 0,
+          "navigationStackDepth": 0
+        }
+      ]
+    },
+    "45-rc4": {
+      "completedCycles": 3,
+      "unexpectedProfileReset": false,
+      "rawEvidenceSha256": "ecb8df063c96c47943f0d9a4dee9aad9e5837885f2eab2afc8a467946933af1a",
+      "samples": [
+        {
+          "label": "home-initial",
+          "route": "home",
+          "systemAvailableKiB": 185740,
+          "dom": {
+            "documents": 1,
+            "nodes": 1560,
+            "jsEventListeners": 274
+          },
+          "imageDecodedBytesEstimate": 25716728,
+          "trackedImages": 36,
+          "detachedRootsFound": 0,
+          "navigationStackDepth": 0
+        },
+        {
+          "label": "library-loaded",
+          "route": "library",
+          "systemAvailableKiB": 187620,
+          "dom": {
+            "documents": 1,
+            "nodes": 2611,
+            "jsEventListeners": 115
+          },
+          "imageDecodedBytesEstimate": 17382472,
+          "trackedImages": 21,
+          "detachedRootsFound": 0,
+          "navigationStackDepth": 0
+        },
+        {
+          "label": "detail-1",
+          "route": "detail",
+          "systemAvailableKiB": 195500,
+          "dom": {
+            "documents": 1,
+            "nodes": 2834,
+            "jsEventListeners": 241
+          },
+          "imageDecodedBytesEstimate": 4829296,
+          "trackedImages": 3,
+          "detachedRootsFound": 0,
+          "navigationStackDepth": 1
+        },
+        {
+          "label": "home-1",
+          "route": "home",
+          "systemAvailableKiB": 174544,
+          "dom": {
+            "documents": 1,
+            "nodes": 4343,
+            "jsEventListeners": 322
+          },
+          "imageDecodedBytesEstimate": 10538648,
+          "trackedImages": 27,
+          "detachedRootsFound": 0,
+          "navigationStackDepth": 0
+        },
+        {
+          "label": "home-2",
+          "route": "home",
+          "systemAvailableKiB": 173092,
+          "dom": {
+            "documents": 1,
+            "nodes": 7383,
+            "jsEventListeners": 395
+          },
+          "imageDecodedBytesEstimate": 22062728,
+          "trackedImages": 25,
+          "detachedRootsFound": 0,
+          "navigationStackDepth": 0
+        },
+        {
+          "label": "detail-3",
+          "route": "detail",
+          "systemAvailableKiB": 165476,
+          "dom": {
+            "documents": 1,
+            "nodes": 8792,
+            "jsEventListeners": 437
+          },
+          "imageDecodedBytesEstimate": 4734976,
+          "trackedImages": 12,
+          "detachedRootsFound": 0,
+          "navigationStackDepth": 1
+        },
+        {
+          "label": "home-3",
+          "route": "home",
+          "systemAvailableKiB": 157516,
+          "dom": {
+            "documents": 1,
+            "nodes": 10295,
+            "jsEventListeners": 480
+          },
+          "imageDecodedBytesEstimate": 12425608,
+          "trackedImages": 23,
+          "detachedRootsFound": 0,
+          "navigationStackDepth": 0
+        },
+        {
+          "label": "home-settled",
+          "route": "home",
+          "systemAvailableKiB": 150472,
+          "dom": {
+            "documents": 1,
+            "nodes": 10347,
+            "jsEventListeners": 505
+          },
+          "imageDecodedBytesEstimate": 30056712,
+          "trackedImages": 36,
+          "detachedRootsFound": 0,
+          "navigationStackDepth": 0
+        },
+        {
+          "label": "home-after-diagnostic-gc",
+          "route": "home",
+          "systemAvailableKiB": 180344,
+          "dom": {
+            "documents": 1,
+            "nodes": 1548,
+            "jsEventListeners": 91
+          },
+          "imageDecodedBytesEstimate": 30056712,
+          "trackedImages": 36,
+          "detachedRootsFound": 0,
+          "navigationStackDepth": 0
+        }
+      ]
+    }
+  },
+  "finalCandidate": {
+    "label": "45-rc4",
+    "profileSelection": {
+      "route": "profileSelection",
+      "build": "uj630-candidate.45-rc4",
+      "width": 1920,
+      "height": 1080,
+      "images": [
+        {
+          "loaded": true,
+          "width": 1085,
+          "height": 344,
+          "blob": false
+        },
+        {
+          "loaded": true,
+          "width": 512,
+          "height": 512,
+          "blob": true
+        },
+        {
+          "loaded": true,
+          "width": 512,
+          "height": 512,
+          "blob": true
+        }
+      ]
+    },
+    "navigation": {
+      "indices": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "allSevenMoved": true
+    },
+    "idleChecks": {
+      "home": true,
+      "sameBuild": true,
+      "noImageAssignments": true,
+      "noImageReads": true,
+      "noDecorativeReads": true,
+      "noScheduledActivity": true,
+      "noRetainedScreenRoots": true,
+      "withinImageEstimate": true,
+      "noActiveVideo": true
+    },
+    "nativeTrailer": [
+      {
+        "label": "detail-before-trailer",
+        "video": null,
+        "trackedImages": 6,
+        "decodedBytesEstimate": 5006976
+      },
+      {
+        "label": "trailer-6s",
+        "video": {
+          "paused": false,
+          "time": 4.187,
+          "width": 1280,
+          "height": 720,
+          "error": null,
+          "ready": 4
+        },
+        "trackedImages": 0,
+        "decodedBytesEstimate": 1048576
+      },
+      {
+        "label": "trailer-paused",
+        "video": {
+          "paused": true,
+          "time": 4.385,
+          "width": 1280,
+          "height": 720,
+          "error": null,
+          "ready": 4
+        },
+        "trackedImages": 0,
+        "decodedBytesEstimate": 1048576
+      },
+      {
+        "label": "trailer-resumed",
+        "video": {
+          "paused": false,
+          "time": 19.299,
+          "width": 1280,
+          "height": 720,
+          "error": null,
+          "ready": 4
+        },
+        "trackedImages": 0,
+        "decodedBytesEstimate": 1048576
+      },
+      {
+        "label": "trailer-36s",
+        "video": {
+          "paused": false,
+          "time": 34.547,
+          "width": 1280,
+          "height": 720,
+          "error": null,
+          "ready": 4
+        },
+        "trackedImages": 0,
+        "decodedBytesEstimate": 1048576
+      },
+      {
+        "label": "detail-after-trailer",
+        "video": null,
+        "trackedImages": 6,
+        "decodedBytesEstimate": 6372576
+      },
+      {
+        "label": "library-after-trailer",
+        "video": null,
+        "trackedImages": 21,
+        "decodedBytesEstimate": 17382472
+      },
+      {
+        "label": "home-after-trailer",
+        "video": null,
+        "trackedImages": 36,
+        "decodedBytesEstimate": 5132728
+      }
+    ],
+    "serviceMemoryKiB": {
+      "rss": 29512,
+      "swap": 8460,
+      "note": "Service was restarted after installation; not an isolated improvement comparison."
+    }
+  },
+  "limits": [
+    "Diagnostic forced GC only; never shipped as a production workaround.",
+    "System available memory is not Nuvio browser RSS.",
+    "Direct screen fields were inspected; not an exhaustive heap traversal.",
+    "No new p99, thirty-minute playback, complete standby/restart or other-model qualification."
+  ]
+}

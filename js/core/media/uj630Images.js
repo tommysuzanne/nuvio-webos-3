@@ -1,3 +1,4 @@
+import { Uj630MemberAssets } from "./uj630MemberAssets.js";
 import { UJ630_BUDGETS } from "../../platform/uj630Budgets.js";
 import { createUj630Cache } from "../cache/uj630Caches.js";
 import { tryAcquireUj630ReadSlot, onUj630ReadSlotAvailable, createUj630ReadContext } from "../network/uj630ReadContext.js";
@@ -51,7 +52,7 @@ function decodedBytes() {
     if (entry.loaded && connected(entry.node)) sources.set(entry.src, entry.node.naturalWidth * entry.node.naturalHeight * 4);
     if (entry.probe) sources.set(entry.blobUrl, entry.probe.naturalWidth * entry.probe.naturalHeight * 4 || limits.maxPixels * 4);
   });
-  let total = 0; sources.forEach(bytes => { total += bytes; }); return total;
+  let total = Uj630MemberAssets.stats().decodedBytes || 0; sources.forEach(bytes => { total += bytes; }); return total;
 }
 function schedule() {
   if (frame || wake || !jobs.size) return;
@@ -71,6 +72,7 @@ function clearProbe(entry) {
   clearTimeout(entry.probeTimer); entry.probeTimer = 0;
   if (entry.probe) { entry.probe.onload = null; entry.probe.onerror = null; entry.probe.removeAttribute("src"); entry.probe = null; }
   if (entry.blobUrl) { URL.revokeObjectURL(entry.blobUrl); entry.blobUrl = ""; }
+  entry.blobBytes = 0;
 }
 function recordFailure(key) {
   const failure = {attempts:(failures.get(key)?.attempts || 0) + 1, until:Date.now() + 60000};
@@ -105,7 +107,7 @@ function finishBase(entry, failed, isCommit) {
   schedule();
 }
 function queueRefresh(entry) {
-  if (!current(entry) || !entry.loaded || entry.refreshing || entry.blobUrl || !entry.baked ||
+  if (!current(entry) || !entry.loaded || entry.refreshDeferred || entry.refreshing || entry.blobUrl || !entry.baked ||
       validated.get(entry.original) || !canRetry(entry.original) || /\.(gif|gifv|avif|mp4|webm)(?:[?#]|$)/i.test(entry.original)) return;
   queue(entry, "refresh");
 }
@@ -127,7 +129,7 @@ function startRefresh(entry) {
     return blob;
   }).then(blob => {
     if (!current(entry) || controller.signal.aborted) return;
-    entry.blobUrl = URL.createObjectURL(blob); entry.remoteSrc = proxy; entry.manual = false;
+    entry.blobBytes = blob.size; entry.blobUrl = URL.createObjectURL(blob); entry.remoteSrc = proxy; entry.manual = false;
     queue(entry, "probe");
   }).catch(() => {
     if (!current(entry)) return;
@@ -183,7 +185,19 @@ function drain() {
   jobs.forEach(job => { if (job.kind === "commit" || !activeUrls.has(job.entry.src)) pending.push(job); });
   const priority = job => job.kind === "commit" ? -2 : job.entry.priority + (job.kind === "refresh" ? 4 : job.kind === "probe" ? 2 : 0);
   pending.sort((a,b) => priority(a) - priority(b));
-  const job = pending[0]; if (!job) return;
+  // Do not retain replacement blobs indefinitely or let a blocked probe starve
+  // visible base images. Keep the old image when there is no decode headroom.
+  const job = pending.find(candidate => {
+    if (["probe", "refresh"].includes(candidate.kind) && decodedBytes() + limits.maxPixels * 4 > limits.decodedBytes) {
+      jobs.delete(candidate.entry.node); clearProbe(candidate.entry); candidate.entry.refreshDeferred = true; return false;
+    }
+    if (candidate.kind === "refresh") {
+      let reserved = 0;
+      entries.forEach(entry => { reserved += entry.blobBytes || (entry.refreshing ? limits.maxRemoteBytes : 0); });
+      if (reserved + limits.maxRemoteBytes > 2 * limits.maxRemoteBytes) return false;
+    }
+    return true;
+  }); if (!job) return;
   if (job.kind !== "commit") {
     if (activeUrls.size >= limits.parallel) return;
     if (job.kind === "probe" && decodedBytes() + limits.maxPixels * 4 > limits.decodedBytes) return;
@@ -219,6 +233,7 @@ export const Uj630Images = {
   interact() {
     settleAt = Date.now() + 150;
     entries.forEach(entry => {
+      entry.refreshDeferred = false;
       entry.refreshAbort?.abort();
       if (entry.state === "loading" && /^https?:/.test(entry.src)) {
         clearLoad(entry); entry.node.removeAttribute("src"); entry.state = "queued"; queue(entry, "base");
@@ -227,6 +242,7 @@ export const Uj630Images = {
     schedule();
   },
   enqueueTree(root, priority = 0, selector = "img") {
+    if (!root || root.closest?.("[data-uj-images-suspended]")) return;
     root.querySelectorAll(selector).forEach(node => {
       if (node.classList.contains("home-poster-focus-gif")) { release(node); return; }
       const role = node.dataset.ujImageRole || "";
@@ -250,7 +266,7 @@ export const Uj630Images = {
     if (frame) cancelAnimationFrame(frame); if (wake) clearTimeout(wake);
     frame = 0; wake = 0; lastAssignmentAt = 0; jobs.clear(); activeUrls.clear(); releaseWebOsImageProxy();
   },
-  stats() { return {tracked:entries.size, pending:jobs.size, active:activeUrls.size, decodedBytesEstimate:decodedBytes(), assignmentCount}; }
+  stats() { return {tracked:entries.size, pending:jobs.size, active:activeUrls.size, decodedBytesEstimate:decodedBytes(), privateAssets:Uj630MemberAssets.stats(), assignmentCount}; }
 };
 onUj630ReadSlotAvailable(schedule);
 onWebOsImageProxyReady(() => {

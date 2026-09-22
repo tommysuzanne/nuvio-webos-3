@@ -483,10 +483,18 @@ function registerSubtitleTextCommand() {
   });
 }
 
+function ownSubtitleRead(message, payload, task) {
+  var id = payload.requestId, context;
+  try { context = bitmapSubtitles.beginOwnedRead(id); }
+  catch (error) { return Promise.reject(error); }
+  return Promise.resolve().then(function () { return task(context); }).then(function (value) {
+    bitmapSubtitles.endOwnedRead(id); return value;
+  }, function (error) { bitmapSubtitles.endOwnedRead(id); throw error; });
+}
 function registerBitmapSubtitleCommand() {
   service.register("bitmapSubtitlePrepare", function (message) {
     var payload = getMessagePayload(message);
-    prepareBitmapSubtitleSource({ url: payload.url })
+    ownSubtitleRead(message, payload, function (context) { return prepareBitmapSubtitleSource({ url: payload.url, requestContext:context }); })
       .then(function (result) {
         respond(message, Object.assign(buildBasePayload(), result, { returnValue: true }));
       })
@@ -505,12 +513,13 @@ function registerBitmapSubtitleCommand() {
 
   service.register("bitmapSubtitleWindow", function (message) {
     var payload = getMessagePayload(message);
-    getBitmapSubtitleWindow({
+    ownSubtitleRead(message, payload, function (context) { return getBitmapSubtitleWindow({
+      requestContext: context,
       url: payload.url,
       trackNumber: payload.trackNumber,
       startSeconds: payload.startSeconds,
       endSeconds: payload.endSeconds
-    })
+    }); })
       .then(function (result) {
         respond(message, Object.assign(buildBasePayload(), result, { returnValue: true }));
       })
@@ -533,13 +542,14 @@ function registerBitmapSubtitleCommand() {
 function registerEmbeddedTextSubtitleCommand() {
   service.register("embeddedSubtitleTextWindow", function (message) {
     var payload = getMessagePayload(message);
-    getEmbeddedTextSubtitleWindow({
+    ownSubtitleRead(message, payload, function (context) { return getEmbeddedTextSubtitleWindow({
+      requestContext: context,
       url: payload.url,
       trackNumber: payload.trackNumber,
       startSeconds: payload.startSeconds,
       endSeconds: payload.endSeconds,
       includeAssBody: payload.includeAssBody
-    })
+    }); })
       .then(function (result) {
         respond(message, Object.assign(buildBasePayload(), result, { returnValue: true }));
       })
@@ -1559,6 +1569,7 @@ service.register("cancelProxyRead", function (message) {
   var id = String(getMessagePayload(message).requestId || "");
   var context = activeProxyReads[id];
   if (context) { delete activeProxyReads[id]; requestContexts.cancel(context); }
+  bitmapSubtitles.cancelOwnedRead(id);
   require("./supabaseProxy").cancelRequest(id);
   respond(message, Object.assign(buildBasePayload(), { cancelled: Boolean(context) }));
 });
@@ -1590,6 +1601,10 @@ registerSafeHttpProxyCommand("safeHttpProxy");
 registerEngineFsKeepAliveCommands();
 registerTracksCommand();
 registerSubtitleTextCommand();
+service.register("releaseMediaResources", function (message) {
+  bitmapSubtitles.clearBitmapSubtitleCaches();
+  respond(message, {returnValue:true});
+});
 registerBitmapSubtitleCommand();
 registerEmbeddedTextSubtitleCommand();
 registerTorrentProxyCommands();

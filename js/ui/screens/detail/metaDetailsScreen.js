@@ -1,3 +1,4 @@
+import { setUj630MediaOverlay } from "../../../platform/uj630Activity.js";
 import { waitForUj630Hero } from "./uj630HeroReady.js";
 import { NativeTrailerDialog, nativeTrailerQuery } from "../../components/nativeTrailerDialog.js";
 import { watchTrailerStart } from "../../../core/player/trailerStartGuard.js";
@@ -1906,6 +1907,12 @@ export const MetaDetailsScreen = {
       return;
     }
 
+    if (restoredRouteState) {
+      this.pendingFocusRestore = restoredRouteState.pendingFocusRestore || null;
+      this.restoredContentScrollTop = Number(restoredRouteState.contentScrollTop || 0);
+      this.restoredTrackScrollLeftByKey = restoredRouteState.trackScrollLeftByKey || {};
+      this.railFocusIndexByKey = restoredRouteState.railFocusIndexByKey || {};
+    }
     setUj630ImageHtml(this.container, `
       <div class="detail-loading-shell" aria-label="Loading detail">
         <div class="detail-loading-top">
@@ -7528,7 +7535,17 @@ export const MetaDetailsScreen = {
       const focus = this.captureDetailFocus();
       this.nativeTrailerDialog = new NativeTrailerDialog({
         query: nativeTrailerQuery(this.meta, this.params),
-        onClose: () => this.focusDetailDescriptor(focus)
+        beforePlay: () => {
+          setUj630MediaOverlay(true);
+          this.container?.setAttribute("data-uj-images-suspended", "true");
+          Uj630Images.releaseTree(this.container);
+        },
+        onClose: () => {
+          setUj630MediaOverlay(false);
+          this.container?.removeAttribute("data-uj-images-suspended");
+          Uj630Images.enqueueTree(this.container, 0, "img[data-uj-managed]");
+          this.focusDetailDescriptor(focus);
+        }
       });
       void this.nativeTrailerDialog.open();
       return;
@@ -10049,6 +10066,8 @@ export const MetaDetailsScreen = {
   },
 
   cleanup() {
+    setUj630MediaOverlay(false);
+    this.container?.removeAttribute("data-uj-images-suspended");
     this.heroReadyWait?.cancel(); this.heroReadyWait = null;
     this.nativeTrailerDialog?.close(false); this.nativeTrailerDialog = null;
     if (supportsUj630Performance()) Uj630Images.releaseTree(this.container);
@@ -10111,5 +10130,9 @@ export const MetaDetailsScreen = {
       this.trailerProxyMessageHandler = null;
     }
     ScreenUtils.hide(this.container);
+    this.meta = null;
+    this.episodes = this.castItems = this.moreLikeThisItems = this.collectionItems = this.commentsItems = [];
+    this.seriesRatingsBySeason = {}; this.nextEpisodeToWatch = null; this.trailerSource = null;
+    this.episodeProgressMap?.clear(); this.watchedEpisodeKeys?.clear();
   }
 };

@@ -24,7 +24,7 @@ These are internal versions of this port, not an A/B against unmodified iqui27. 
 
 ## What remains unqualified
 
-- Long-term total memory stability is **not established**. Thirty navigation cycles did not establish a leak-free state; heap growth followed by partial recovery requires further controlled measurements of the browser, service and decoded media. Cache estimates are not total process memory.
+- Long-term total memory stability is **not established**. The historical42 navigation cycles did not establish a leak-free state; heap growth followed by partial recovery requires further controlled measurements of the browser, service and decoded media. Cache estimates are not total process memory.
 - Historical42 completed a continuous playback run exceeding 30 minutes without recorded waiting/stall/error events, using a lightweight synthetic 4K H.264 test. That does not qualify high-bitrate media, all codecs, network conditions or all addons.
 - Precise seeking on HEVC, physical standby/restart scenarios and other TV models remain incomplete.
 - This **public variant has not been newly installed or qualified on the TV**. Removing private artwork/configuration and making the build portable changes the artifact. Historical42 results must not be relabeled as measurements of the public package.
@@ -32,7 +32,7 @@ These are internal versions of this port, not an A/B against unmodified iqui27. 
 
 ## Automated public checks
 
-`npm run validate:public` runs 47 UJ630 regression groups, the native JavaScript tests, source checks, legacy JavaScript/CSS/API checks, a placeholder IPK build and ES5 parsing. It writes step results outside the checkout, to `NUVIO_EVIDENCE_DIR` or a sibling validation directory. CI runs with no account secrets and no TV. The initial local run passed all 41 groups and 102 native tests; the actual placeholder IPK passed ES5 parsing for 19 files, with three executable-plugin files blocked by the UJ630 policy ([local report](public-local-checks.json)). See the workflow result for the exact commit; local results alone are not TV evidence.
+`npm run validate:public` runs 48 UJ630 regression groups, the native JavaScript tests, source checks, legacy JavaScript/CSS/API checks, a placeholder IPK build and ES5 parsing. It writes step results outside the checkout, to `NUVIO_EVIDENCE_DIR` or a sibling validation directory. CI runs with no account secrets and no TV. The initial local run passed all 41 groups and 102 native tests; the actual placeholder IPK passed ES5 parsing for 19 files, with three executable-plugin files blocked by the UJ630 policy ([local report](public-local-checks.json)). See the workflow result for the exact commit; local results alone are not TV evidence.
 
 The regression groups cover read-only collections, rejected stale/invalid sync responses, per-profile state, pages/cache eviction, image budgets/revalidation, cancellation, Next Up recovery, focus and independent rescue-policy fixtures. The five rescue fixture source files are sufficient for those regression tests, not an installable rescue package.
 
@@ -48,7 +48,10 @@ The regression groups cover read-only collections, rejected stale/invalid sync r
 | Identifier mappings | 2,048 entries / 24 h |
 | Proxy images | 8 MiB including metadata and temporary replacements |
 | Individual remote image | 1 MiB / 1,048,576 pixels / 24 h freshness |
-| Decoded navigation images | 32 MiB estimated target |
+| Decoded navigation images | 32 MiB estimated target, including active private profile artwork |
+| Private profile artwork | 8 MiB file data / 8 entries / 4 MiB per file; 16 MiB estimated decoded target; selected/visible assets only |
+| Navigation snapshots | 128 lightweight states / 1 MiB estimate / 6 h; full payloads share the metadata budget |
+| Subtitle service caches | Shared 8 MiB estimate / 4 MiB maximum retained entry; expiry at idle |
 | Image work | 2 downloads; at most one assignment per frame and 34 ms minimum interval |
 | Next Up | 4 profiles / 32 series candidates / 5 min; one calculation, retry at 60 s then 5 min while Home is idle |
 
@@ -69,3 +72,15 @@ The native trailer chooser has a fixed-size white focus, the top action has a cl
 On the installed RC4, the three VF/VO/Back focused choices measured 919.61 px wide inside a 998.39 px panel, with white focus and no transform. RC3 measured 1011.57 px for the focused button, exceeding the panel by about 6.6 px on each side. Film and series checks found no lower trailer tab, including restoration of old saved tab state.
 
 Indicative same-TV reopen observations (one pass per build, 200 ms polling plus CDP overhead, uncontrolled provider latency): Interstellar backdrop/logo appeared at 7.117/8.978 s on RC3 and 3.955/5.274 s on warmed RC4; Severance at 7.967/8.218 s versus 4.803/4.803 s. RC4 first openings were slower than reopens (Interstellar both images 7.780 s; Severance both 5.757 s). Decoded source sizes stayed at 1280 px for the backdrop and 500 px for the logo. These observations show the cache benefit on the sampled titles; they are not cold-cache benchmarks, a universal latency promise or a strict frame-time qualification.
+
+## Build45 resource checks (2026-09-22)
+
+The private UJ630 audit found Library posters outside the common image budget, detached grids retained by focus references, eager hydration of an entire private profile-artwork catalog, unbounded detail snapshots and subtitle caches without a shared byte budget. Build45 addresses these paths; [ownership and limits](RESOURCE-LIFECYCLE.md) describe the changes.
+
+Personal **45-rc3** completed **30 navigation cycles**, a short VF trailer test and another **ten cycles** without restarting. After the first series, system available memory was 90,624 KiB settled and 153,836 KiB after diagnostic garbage collection. After the second series it was 121,372 KiB settled and 171,868 KiB after collection, versus 172,552 KiB at the initial start. The second series returned to the same **1,548 DOM nodes / 91 listeners** after collection. This distinguishes recoverable allocation from retained resources in this sampled path; it does not prove long-term leak freedom. No forced collection runs in the shipped app.
+
+Personal **45-rc4** then added removal of mounted images when their private URL is evicted. Its own checks covered a new profile start, **three cycles**, VF playback/pause/resume/Back and ten seconds of idle observation. Two private 512 × 512 avatars were loaded at profile selection, rather than the entire catalog. Seven Right presses reached indices 1 through 7. During the trailer, tracked detail images fell to zero; Back removed the video and restored the artwork. The actual provider stream was 1280 × 720 and advanced to 34.547 s; the UI remained 1920 × 1080. Idle checks found no new image assignments, queued/active decorative reads or scheduled activity.
+
+The service's sampled **29,512 KiB RSS / 8,460 KiB swap** follows a normal service restart; it is not a controlled memory improvement against the previous long-running service. Image/cache estimates and total browser memory remain different measures. The direct-field detached-root probe is not exhaustive heap analysis.
+
+[Sanitized numeric observations](build45-validation.json) retain the intermediate memory readings and distinguish the candidates. The public artifact is built separately from the merged source and validated for privacy, syntax and provenance; the personal TV results do not become a full qualification of that different artifact. There is no new p99 or 30-minute playback claim. Historical limitations above remain open.

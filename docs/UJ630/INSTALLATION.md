@@ -6,7 +6,7 @@ Installing the published IPK with the graphical tool below does not require Node
 
 ## Ready-to-install public package
 
-Download the IPK and `SHA256SUMS` from [release 1.1.2-webos3.44](https://github.com/tommysuzanne/nuvio-webos-3/releases/tag/1.1.2-webos3.44). Verify with `shasum -a 256 -c SHA256SUMS` on macOS or `sha256sum -c SHA256SUMS` on Linux. Substitute its filename for the locally built package in the installation commands below.
+Download the IPK and `SHA256SUMS` from [release 1.1.2-webos3.45](https://github.com/tommysuzanne/nuvio-webos-3/releases/tag/1.1.2-webos3.45). Verify with `shasum -a 256 -c SHA256SUMS` on macOS or `sha256sum -c SHA256SUMS` on Linux. Substitute its filename for the locally built package in the installation commands below.
 
 This package uses only the existing public client configuration of the pinned `webos3-exp.32` upstream package. It includes no maintainer account, configured addons, personal API keys, collection exports or artwork. Authenticate with your own account. Public integration configuration is not a guarantee of continued access to upstream services.
 
@@ -80,7 +80,11 @@ The TV's collections are read-only. Organize them on another client and use **Re
 
 The scripts under `scripts/uj630-tv/` are developer diagnostics, not part of CI and not automatic TV setup. Inspect each script's prerequisites before use. Media diagnostics require an explicit `NUVIO_MEDIA_URL` reachable from your TV; the loopback default is a placeholder, not your computer's LAN address. Keep raw diagnostic exports private and publish only sanitized summaries.
 
-## Build44 behavior
+## Current behavior
+
+[Build45 changes](RELEASE-45.md) add bounded resource lifetimes and Library grid navigation fixes. Selected/visible private profile artwork is loaded on demand; full details and subtitle caches are bounded. Restart the companion service or TV after updating so these service corrections actually execute.
+
+### Features retained from build44
 
 [What’s new / nouveautés](RELEASE-44.md) lists the changes from build43. The Library movie/series filter survives a detail/back round trip within the same profile session; changing profiles, accounts or restarting resets it. One poster keeps its normal width.
 
@@ -108,4 +112,4 @@ A service update may leave its previous process resident. Close Nuvio and stop *
 ./node_modules/.bin/ares-launch --device lg-tv space.nuvio.webos
 ```
 
-This normal service restart was required on the test TV to expose the new trailer method; it uses neither root nor a firmware change. Confirm the running public build label is `webos3-public.44`.
+This normal service restart was required on the test TV to expose the new trailer method; it uses neither root nor a firmware change. Confirm the running public build label is `webos3-public.45`.

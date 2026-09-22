@@ -1,3 +1,4 @@
+import { releaseLocalMediaReads } from "../../../core/network/localMediaRead.js";
 import { PlayerController } from "../../../core/player/playerController.js";
 import {
   detectarEntradaDolbyVision,
@@ -25912,6 +25913,7 @@ export const PlayerScreen = {
   },
 
   cleanup() {
+    releaseLocalMediaReads();
     try {
       streamRepository.setLocalPluginSearchPaused(true);
       this.playerRouteActive = false;

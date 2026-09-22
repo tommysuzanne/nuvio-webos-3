@@ -188,6 +188,7 @@ function proxySupabaseRequest(payload, redirectsLeft, callback, redirectChain, c
   }
 
   var parsed = validated.parsed;
+  var responseLimit = /\/storage\/v1\/object\/authenticated\//.test(parsed.pathname) ? 4 * 1024 * 1024 : MAX_RESPONSE_BYTES;
   var body = payload && typeof payload.body === "string" ? payload.body : null;
   var headers = sanitizeHeaders((payload && payload.headers) || {});
   if (body && !headers["Content-Length"] && !headers["content-length"]) {
@@ -235,11 +236,11 @@ function proxySupabaseRequest(payload, redirectsLeft, callback, redirectChain, c
       var responseBytes = 0;
       response.on("data", function (chunk) {
         responseBytes += chunk.length;
-        if (responseBytes <= MAX_RESPONSE_BYTES) responseChunks.push(chunk);
+        if (responseBytes <= responseLimit) responseChunks.push(chunk);
         else { responseChunks.length = 0; callback(new Error("Supabase proxy response too large")); request.destroy(); }
       });
       response.on("end", function () {
-        if (responseBytes > MAX_RESPONSE_BYTES) {
+        if (responseBytes > responseLimit) {
           callback(null, {
             statusCode: 502,
             headers: { "Content-Type": "text/plain; charset=utf-8" },

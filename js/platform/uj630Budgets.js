@@ -4,6 +4,8 @@ export const UJ630_BUDGETS = Object.freeze({
   metadata: { maxEntries: 128, maxBytes: 8 * MiB, ttlMs: 30 * 60 * 1000 },
   tmdb: { maxEntries: 256, maxBytes: 2 * MiB, ttlMs: 6 * 60 * 60 * 1000 },
   ids: { maxEntries: 2048, maxBytes: 2 * MiB, ttlMs: 24 * 60 * 60 * 1000 },
+  routeNavigation: { maxEntries: 128, maxBytes: MiB, ttlMs: 6 * 60 * 60 * 1000 },
+  memberAssets: { maxBytes: 8 * MiB, maxEntryBytes: 4 * MiB, maxEntries: 8, maxPixels: 2097152 },
   images: { maxBytes: 8 * MiB, maxRemoteBytes: MiB, maxPixels: 1048576,
     decodedBytes: 32 * MiB, parallel: 2, assignmentGapMs: 34, ttlMs: 24 * 60 * 60 * 1000 }
 });

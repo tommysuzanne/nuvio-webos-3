@@ -7,7 +7,7 @@ Scope: this repository and its descendants. This is an unofficial JavaScript/web
 - Runtime behavior: code under `js/`, `css/` and `services/webos/`. Build behavior: `scripts/` and `package.json`; dependency resolution: `package-lock.json`.
 - Current upstream references and authorship: [NOTICE](NOTICE.md). This port integrates Nuvio 1.1.2 over iqui27's webOS 3 compatibility foundation; do not attribute upstream features to this project.
 - Supported/tested devices: [COMPATIBILITY](docs/COMPATIBILITY.md). Target is UHD webOS 3.0/3.5; only the documented UJ630 model has hardware evidence. Runtime detection is by engine, not model name.
-- Performance claims: [VALIDATION](docs/UJ630/VALIDATION.md) and its linked numeric evidence. Historical42 timings are not public build44 qualification or a same-device benchmark against iqui27. Retain failed thresholds and unresolved memory/playback limits.
+- Performance claims: [VALIDATION](docs/UJ630/VALIDATION.md) and its linked numeric evidence. Historical42 timings are not public build45 qualification or a same-device benchmark against iqui27. Retain failed thresholds and unresolved memory/playback limits.
 - Root historical documents and `docs/historical/` are archival context. Follow their banners; do not infer current versions or procedures from them.
 
 ## Code map

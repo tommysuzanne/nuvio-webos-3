@@ -1,6 +1,24 @@
 # Changelog — Nuvio for LG webOS 3.x
 
-Port releases are listed first. Upstream version numbers and credits are preserved below; build44 is a port update, not a new upstream Nuvio version.
+Port releases are listed first. Upstream version numbers and credits are preserved below; build45 is a port update, not a new upstream Nuvio version.
+
+## [1.1.2-webos3.45](https://github.com/tommysuzanne/nuvio-webos-3/releases/tag/1.1.2-webos3.45) — 2026-09-22
+
+### Fixed
+
+- Library right-arrow navigation using stale column geometry after the sidebar width changes.
+- Library posters bypassing the shared image budget and old screen DOM retained by focus references.
+- Eager loading of all private profile avatars/backgrounds and unbounded in-memory copies of stored image blobs.
+- Unbounded full-detail route history; full payloads now share the existing metadata cache while small focus states stay separate.
+- Subtitle caches without a shared byte budget or idle expiry; cancellation now reaches the owned HTTP range/redirect requests.
+- Hidden detail illustrations remaining active during native trailers, and missing image restoration on foreground return.
+
+### Validation
+
+- 48 UJ630 regression groups, 102 native tests and legacy/package checks.
+- Personal candidates: 40 navigation cycles on RC3; a final mounted-image eviction correction, three cycles and VF trailer checks on RC4. No universal or long-duration memory guarantee; public artifact checks remain separate.
+
+[What's new / nouveautés, update steps and limits](docs/UJ630/RELEASE-45.md).
 
 ## [1.1.2-webos3.44](https://github.com/tommysuzanne/nuvio-webos-3/releases/tag/1.1.2-webos3.44) — 2026-09-22
 

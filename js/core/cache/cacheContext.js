@@ -6,6 +6,6 @@ export function metadataContextRevision() { return revision; }
 export function invalidateMetadataContext(key) {
   if (key && !relevantKeys.has(key)) return;
   revision += 1;
-  listeners.forEach(listener => listener());
+  listeners.forEach(listener => listener(key));
 }
 export function onMetadataContextChanged(listener) { listeners.add(listener); return () => listeners.delete(listener); }

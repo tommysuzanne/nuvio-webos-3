@@ -1,10 +1,12 @@
 import { supportsUj630Performance } from "./uj630Performance.js";
 let route = "", generation = 0, lastInput = 0, timer = 0, frame = 0, hidden = false, active = 0, dispatchKey = null, rapidInput = false;
+let mediaOverlay = false;
+export function setUj630MediaOverlay(value) { mediaOverlay = Boolean(value); notify(); if (!mediaOverlay) schedule(); }
 const pending = new Map(), listeners = new Set();
-export function isUj630ActivityHidden() { return hidden; }
+export function isUj630ActivityHidden() { return hidden || mediaOverlay; }
 function quietPeriod() { return rapidInput ? 250 : 150; }
 export function shouldDeferUj630Work() {
-  return supportsUj630Performance() && (hidden || route === "player" || Date.now() - lastInput < quietPeriod());
+  return supportsUj630Performance() && (hidden || mediaOverlay || route === "player" || Date.now() - lastInput < quietPeriod());
 }
 export function captureUj630Owner() {
   const captured = generation;
@@ -13,7 +15,7 @@ export function captureUj630Owner() {
 export function onUj630ActivityChange(listener) { listeners.add(listener); return () => listeners.delete(listener); }
 function notify() { listeners.forEach(listener => { try { listener(); } catch (_) {} }); }
 function schedule() {
-  if (!pending.size || frame || timer || active >= 2 || hidden || route === "player") return;
+  if (!pending.size || frame || timer || active >= 2 || hidden || mediaOverlay || route === "player") return;
   const delay = quietPeriod() - (Date.now() - lastInput);
   if (delay > 0) { timer = setTimeout(() => { timer = 0; schedule(); notify(); }, delay + 1); return; }
   frame = requestAnimationFrame(flush);

@@ -34,7 +34,7 @@ export async function requestWebOsCompanionService({
 
   const abortError = () => Object.assign(new Error("Request aborted"), { name: "AbortError" });
   if (signal?.aborted) throw abortError();
-  const cancellable = method === "supabaseProxy" || method === "safeHttpProxy" || method === "nativeTrailers";
+  const cancellable = method === "supabaseProxy" || method === "safeHttpProxy" || method === "nativeTrailers" || ["bitmapSubtitlePrepare", "bitmapSubtitleWindow", "embeddedSubtitleTextWindow"].includes(method);
   const requestId = cancellable ? `read-${Date.now().toString(36)}-${++requestSequence}` : null;
   const payloadParameters = requestId ? { ...parameters, requestId } : parameters;
   let cancelled = false;

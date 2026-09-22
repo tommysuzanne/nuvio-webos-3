@@ -1,3 +1,5 @@
+import { supportsUj630Performance } from "../../platform/uj630Performance.js";
+import { Uj630MemberAssets } from "../media/uj630MemberAssets.js";
 import { Router } from "../../ui/navigation/router.js";
 import { MAX_PROFILES, ProfileManager } from "../../core/profile/profileManager.js";
 import { ProfileSyncService } from "../../core/profile/profileSyncService.js";
@@ -429,6 +431,8 @@ export const ProfileSelectionScreen = {
   async loadAvatarCatalog(hasMemberAccess = this.hasProfileAvatarAccess) {
     try {
       this.avatarCatalog = await AvatarRepository.getAvatarCatalog(Boolean(hasMemberAccess));
+      if (supportsUj630Performance() && this.isMounted)
+        await AvatarRepository.ensureImages((this.profiles || []).map(profile => profile.avatarId), {isCurrent:() => this.isMounted});
     } catch (error) {
       console.warn("Failed to load avatar catalog", error);
       this.avatarCatalog = [];
@@ -603,6 +607,9 @@ export const ProfileSelectionScreen = {
     }
     this.restoreFocus();
     this.updateProfileBackground(this.getFocusedProfile());
+    this.scheduleVisibleProfileAssets();
+    const assetGrid = this.container?.querySelector(".profile-editor-avatar-grid");
+    assetGrid?.addEventListener("scroll", () => this.scheduleVisibleProfileAssets());
   },
 
   renderProfileCard(profile) {
@@ -830,7 +837,7 @@ export const ProfileSelectionScreen = {
                                 data-avatar-id="${escapeHtml(avatar.id)}"
                                 data-focus-key="editor:avatar:${escapeHtml(avatar.id)}"
                                 tabindex="0">
-                          <img class="profile-avatar-tile-image" src="${escapeHtml(avatar.imageUrl)}" alt="${escapeHtml(avatar.displayName)}"/>
+                          <img class="profile-avatar-tile-image" ${supportsUj630Performance() ? "data-src" : "src"}="${escapeHtml(avatar.imageUrl)}" alt="${escapeHtml(avatar.displayName)}"/>
                         </button>
                       `
                         )
@@ -1095,7 +1102,54 @@ export const ProfileSelectionScreen = {
     }
   },
 
+  onLegacyVisibility(hidden) {
+    if (hidden) {
+      clearTimeout(this.profileAssetTimer);
+      this.profileAssetToken = (this.profileAssetToken || 0) + 1;
+      if (this._bgAnimRaf) cancelAnimationFrame(this._bgAnimRaf);
+      this._bgAnimRaf = null;
+      this.container?.querySelectorAll("img").forEach(image => image.removeAttribute("src"));
+      Uj630MemberAssets.clear();
+    } else {
+      void this.loadAvatarCatalog().then(() => { if (this.isMounted) this.render(); });
+    }
+  },
+
+  scheduleVisibleProfileAssets() {
+    if (!supportsUj630Performance() || !this.isMounted) return;
+    clearTimeout(this.profileAssetTimer);
+    this.profileAssetTimer = setTimeout(() => { void this.loadVisibleProfileAssets(); }, 160);
+  },
+
+  async loadVisibleProfileAssets() {
+    if (!this.isMounted) return;
+    const container = this.container, token = this.profileAssetToken = (this.profileAssetToken || 0) + 1;
+    const ids = (this.profiles || []).map(profile => profile.avatarId);
+    const visible = [];
+    const grid = container?.querySelector(".profile-editor-avatar-grid");
+    if (grid) {
+      const bounds = grid.getBoundingClientRect();
+      grid.querySelectorAll("[data-avatar-id]").forEach(node => {
+        const rect = node.getBoundingClientRect();
+        if (rect.bottom > bounds.top && rect.top < bounds.bottom) { ids.push(node.dataset.avatarId); visible.push(node); }
+        else node.querySelector("img")?.removeAttribute("src");
+      });
+    }
+    const bgId = this.editorState?.selectedBackgroundId || this.getFocusedProfile()?.profileBackgroundId;
+    Uj630MemberAssets.retain(ids.map(id => AvatarRepository.assetKey(id)).concat(ProfileBackgroundRepository.assetKey(bgId)));
+    await AvatarRepository.ensureImages(ids, {isCurrent:() => this.isMounted && token === this.profileAssetToken});
+    if (!this.isMounted || container !== this.container || token !== this.profileAssetToken) return;
+    this.avatarImageUrlsById = this.avatarCatalog.reduce((map, item) => { map[item.id] = item.imageUrl; return map; }, {});
+    visible.forEach(node => {
+      if (!container.contains(node)) return;
+      const url = this.getAvatarImageUrl(node.dataset.avatarId), img = node.querySelector("img");
+      if (url && img && img.getAttribute("src") !== url) img.src = url;
+    });
+    if (bgId) await ProfileBackgroundRepository.loadSelectedAndPreload(bgId);
+  },
+
   handleFocusableFocus(node) {
+    this.scheduleVisibleProfileAssets();
     const previousFocused = this.focusedNode;
     if (previousFocused && previousFocused !== node && previousFocused.isConnected) {
       previousFocused.classList.remove("focused");
@@ -1144,7 +1198,7 @@ export const ProfileSelectionScreen = {
       const avatarButtons = Array.from(
         gridNode?.querySelectorAll("[data-action='select-avatar']") || []
       );
-      centerAvatarRowInScrollContainer(node, gridNode, avatarButtons, "smooth");
+      centerAvatarRowInScrollContainer(node, gridNode, avatarButtons, supportsUj630Performance() ? "auto" : "smooth");
     }
 
     if (category) {
@@ -2766,6 +2820,13 @@ export const ProfileSelectionScreen = {
 
   cleanup() {
     this.isMounted = false;
+    this.profileAssetToken = (this.profileAssetToken || 0) + 1;
+    clearTimeout(this.profileAssetTimer);
+    if (supportsUj630Performance()) {
+      const selected = (this.profiles || []).find(profile => String(profile.id) === String(ProfileManager.getActiveProfileId()));
+      Uj630MemberAssets.retain([AvatarRepository.assetKey(selected?.avatarId)]);
+      this.avatarCatalog = []; this.avatarImageUrlsById = {}; this.profileBackgroundCatalog = [];
+    }
     this.memberAccessUnsubscribe?.();
     this.memberAccessUnsubscribe = null;
     this.profileBackgroundUnsubscribe?.();
