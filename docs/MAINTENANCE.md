@@ -18,9 +18,19 @@ These rules protect Git references. They do not make release assets immutable or
 
 ## Releases and privacy
 
-Current build43's `UJ630` tag and IPK filename record its tested origin. They remain unchanged, as do its bytes and SHA-256. The repository rename and compatibility wording are documentation/metadata changes, not a new app build or additional device qualification.
+Build44 uses tag `1.1.2-webos3.44`, label `webos3-public.44` and `Nuvio-1.1.2-webOS3-44-1080p.ipk`. Nuvio's upstream version remains 1.1.2. The older build43 `UJ630` tag, IPK and checksum remain unchanged and available for rollback. The name change does not qualify another TV model.
 
 A release must point to its actual source revision, include the package checksum/provenance, and state validation limits. Never publish private artwork, account exports, configured personal addon URLs, sessions or API keys. The public builder accepts only the hash-pinned upstream client package and rejects personal configuration/artwork.
+
+## Publishing an update
+
+1. Review changes against the previous release. Update the current section of `CHANGELOG.md`, the English/French release notes under `docs/UJ630/`, and the short README links. Preserve upstream credits and distinguish new work from existing features.
+2. Update the public build label and filename. Run `npm run validate:public`, scan every staged source file for private data, and submit a PR. Merge by squash only after the required `validate` check passes on the current base; never bypass the ruleset.
+3. Build from the clean merged source commit with `npm run build:release`. Inspect the actual public IPK, its legacy syntax, configuration provenance and private-data scan. Never upload a personal backup IPK or a CHECK-ONLY package.
+4. Create a new tag on that exact commit. Prepare a draft GitHub Release with user-facing English/French notes, update instructions and validation limits. Attach the IPK, `SHA256SUMS`, `release-manifest.json` and a sanitized `validation.json` summary. Source archives are supplied by GitHub from the tag.
+5. Verify asset hashes, tag/manifest commit agreement and links before publishing as the latest release. Existing releases and assets remain unchanged. Source-build reproduction follows the pinned inputs; archive timestamps can prevent byte-for-byte reproduction.
+
+A code push updates the repository; a release gives installers a versioned package and readable changes. New app behavior must not be advertised solely from commit subjects. GitHub release publication does not enable TV auto-updates. See [GitHub Releases](https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases).
 
 ## Keeping compatibility claims accurate
 

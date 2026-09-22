@@ -8,7 +8,7 @@
 [![Release](https://img.shields.io/github/v/release/tommysuzanne/nuvio-webos-3?label=download)](https://github.com/tommysuzanne/nuvio-webos-3/releases/latest)
 [![GPLv3](https://img.shields.io/badge/license-GPLv3-blue.svg)](LICENSE)
 
-**[Download the IPK](https://github.com/tommysuzanne/nuvio-webos-3/releases/latest)** · [Install](docs/UJ630/INSTALLATION.md) · [Compatibility](docs/COMPATIBILITY.md) · [Français](README.fr.md)
+**[Download the IPK](https://github.com/tommysuzanne/nuvio-webos-3/releases/latest)** · [Install](docs/UJ630/INSTALLATION.md) · [Compatibility](docs/COMPATIBILITY.md) · [What’s new](docs/UJ630/RELEASE-44.md) · [Français](README.fr.md)
 
 ## Why this version exists
 
@@ -27,8 +27,10 @@ Those initial reports concern this TV and early local builds—not a controlled 
 | A focused Home | Collections + Continue Watching, including next/upcoming episodes, without fallback catalog rows. |
 | Clear, predictable navigation | Rectangular covers, compact left menu, fixed background and immediate focus outline. |
 | Less work while browsing | Windowed cards, bounded caches, paced image loading and screens loaded on demand. |
-| Collections kept in sync | Refresh on eligible Home/foreground entry after five minutes, or manually; invalid/stale responses are rejected. |
+| Collections kept in sync | Refresh on eligible Home/foreground entry after one minute, or manually; invalid/stale responses are rejected. |
 | Everyday fixes | Corrected accents and addon reconciliation, plus 4K-first source ordering. |
+
+**New in build44:** native VF/VO trailers, faster detail revisits, persistent Library filters and fixes for empty collection tabs and the MP4 startup probe. [What’s new and how to update](docs/UJ630/RELEASE-44.md).
 
 **Tradeoffs:** collections are organized on another device; performance settings are fixed; updates are installed manually. Heavy or incompatible covers may use a title card. HTTP addons and native playback remain available; incompatible executable/P2P plugins are blocked. A 4K source still needs codecs and bandwidth your TV supports.
 
@@ -38,7 +40,7 @@ Prefer another project if you need the default animated presentation, TV-side co
 
 | TV | Status |
 | --- | --- |
-| **LG 49UJ630V-ZA**, UHD, firmware 06.10.75 | Installation tested; build43 navigation/settings smoke checks passed. Qualification limits below. |
+| **LG 49UJ630V-ZA**, UHD, firmware 06.10.75 | Installation tested; build43 navigation/settings and personal build44 detail/trailer checks passed. Qualification limits below. |
 | Other **UHD / 4K webOS 3.0 / 3.5** models | Unverified; model reports welcome. |
 | **Full HD webOS 3.x** | Requires a different graphics package; this 1080p IPK is not qualified. |
 | **webOS 1/2** | Unsupported. |
@@ -66,9 +68,9 @@ Historical **build42**, 49UJ630V-ZA at **1080p**, three controlled runs:
 | Warm first usable Home | Approximately **1.59–1.86 s** |
 | Navigation frame interval p99 | **19.780–33.611 ms** |
 
-The revised p99 limit is 35 ms; failures against the original 33 ms limit remain documented. Build43 received short TV checks with private artwork. **The downloadable public binary has not received a separate full TV qualification.** Long-term memory stability, precise HEVC seeking and complete standby/restart coverage remain open.
+The revised p99 limit is 35 ms; failures against the original 33 ms limit remain documented. Build43 and the personal build44 candidate received targeted TV checks with private artwork. **The downloadable public binary has not received a separate full TV qualification.** Long-term memory stability, precise HEVC seeking and complete standby/restart coverage remain open.
 
-**41 UJ630 regression groups and 102 native JavaScript tests** run with build/legacy checks in CI. These do not establish zero lag. [Full measurements, refactor size gains and limits](docs/UJ630/VALIDATION.md).
+**47 UJ630 regression groups and 102 native JavaScript tests** run with build/legacy checks in CI. These do not establish zero lag. [Full measurements, refactor size gains and limits](docs/UJ630/VALIDATION.md).
 
 ## Build, contribute or get help
 

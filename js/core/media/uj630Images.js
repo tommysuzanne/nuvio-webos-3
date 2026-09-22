@@ -23,11 +23,11 @@ function originalUrl(value) {
   }
   return source;
 }
-function remoteThumbnail(original, portrait = false) {
-  const key = `${portrait}:${original}`, cached = normalized.get(key);
+function remoteThumbnail(original, portrait = false, role = "") {
+  const key = `${role}:${portrait}:${original}`, cached = normalized.get(key);
   if (cached) return cached;
   retainWebOsImageProxy();
-  let source = normalizeImageUrl(tmdbImageAtSize(original, portrait ? "w342" : "w500"));
+  let source = normalizeImageUrl(tmdbImageAtSize(original, role === "backdrop" ? "w1280" : role === "logo" ? "w500" : portrait ? "w342" : "w500"));
   if (!/^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?\/image-proxy\?/.test(source)) return "";
   // The browser keeps its common read lease until this response is complete.
   // Serving a fallback must never detach a second background HTTP request.
@@ -36,14 +36,14 @@ function remoteThumbnail(original, portrait = false) {
   if (baked) source += `&fallback=${encodeURIComponent(baked)}`;
   normalized.set(key, source); return source;
 }
-export function staticThumbnail(url, portrait = false) {
+export function staticThumbnail(url, portrait = false, role = "") {
   const original = originalUrl(url);
   if (!original || !/^https?:/i.test(original)) return original;
   const baked = UJ630_ARTWORK[artworkKey(original)];
   if (/\.(gif|gifv|avif|mp4|webm)(?:[?#]|$)/i.test(original)) return baked ? `assets/uj630-artwork/${baked}` : "";
   retainWebOsImageProxy();
   if (baked && !validated.get(original)) return `assets/uj630-artwork/${baked}`;
-  return remoteThumbnail(original, portrait) || (baked ? `assets/uj630-artwork/${baked}` : "");
+  return remoteThumbnail(original, portrait, role) || (baked ? `assets/uj630-artwork/${baked}` : "");
 }
 function decodedBytes() {
   const sources = new Map();
@@ -110,7 +110,7 @@ function queueRefresh(entry) {
   queue(entry, "refresh");
 }
 function startRefresh(entry) {
-  const proxy = remoteThumbnail(entry.original, entry.portrait);
+  const proxy = remoteThumbnail(entry.original, entry.portrait, entry.role);
   if (!proxy) { entry.releaseSlot?.(); entry.releaseSlot = null; return; }
   const releaseSlot = entry.releaseSlot; entry.releaseSlot = null;
   const oldSrc = entry.src; activeUrls.add(oldSrc);
@@ -229,14 +229,16 @@ export const Uj630Images = {
   enqueueTree(root, priority = 0, selector = "img") {
     root.querySelectorAll(selector).forEach(node => {
       if (node.classList.contains("home-poster-focus-gif")) { release(node); return; }
+      const role = node.dataset.ujImageRole || "";
+      const imagePriority = role === "logo" || role === "backdrop" ? -3 : priority;
       const old = entries.get(node);
-      if (old) { old.priority = priority; if (old.state === "failed") retryBase(old); else queueRefresh(old); return; }
+      if (old) { old.priority = imagePriority; if (old.state === "failed") retryBase(old); else queueRefresh(old); return; }
       const raw = node.dataset.src || node.dataset.lazySrc || node.getAttribute("src");
-      const original = originalUrl(raw), portrait = !root.classList.contains("is-landscape"), src = staticThumbnail(original, portrait);
+      const original = originalUrl(raw), portrait = !root.classList.contains("is-landscape"), src = staticThumbnail(original, portrait, role);
       node.removeAttribute("onerror"); node.removeAttribute("data-fallback-srcs"); node.removeAttribute("src");
       if (!src) return;
       node.dataset.src = raw;
-      const entry = {node, src, original, portrait, baked:UJ630_ARTWORK[artworkKey(original)], priority, state:"queued", loaded:false};
+      const entry = {node, src, original, portrait, role, baked:UJ630_ARTWORK[artworkKey(original)], priority:imagePriority, state:"queued", loaded:false};
       entries.set(node, entry);
       if (!canRetry(src)) { entry.state = "failed"; const failure = failures.get(src); if (failure.attempts < 3) entry.retryTimer = setTimeout(() => retryBase(entry), Math.max(1, failure.until - Date.now())); }
       else queue(entry, "base");

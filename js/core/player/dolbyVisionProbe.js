@@ -54,26 +54,51 @@ export function detectarEntradaDolbyVision(url) {
   }
   return new Promise((resolve) => {
     let encerrado = false;
-    const encerrar = (valor) => {
-      if (!encerrado) {
-        encerrado = true;
-        resolve(valor);
-      }
-    };
-    const relogio = setTimeout(() => encerrar(DOLBY_VISION_DESCONHECIDO), TIMEOUT_MS);
     let pedido;
+    let relogio;
+    const encerrar = (valor, abortar = false) => {
+      if (encerrado) return;
+      encerrado = true;
+      clearTimeout(relogio);
+      if (pedido) {
+        pedido.onload = pedido.onerror = pedido.onabort = pedido.ontimeout = null;
+        pedido.onreadystatechange = pedido.onprogress = null;
+        if (abortar) {
+          try { pedido.abort(); } catch (_) {}
+        }
+      }
+      resolve(valor);
+    };
+    relogio = setTimeout(() => encerrar(DOLBY_VISION_DESCONHECIDO, true), TIMEOUT_MS);
     try {
       pedido = new XMLHttpRequest();
       pedido.open("GET", alvo, true);
       pedido.setRequestHeader("Range", `bytes=0-${BYTES_DE_LEITURA - 1}`);
+      pedido.timeout = TIMEOUT_MS;
     } catch (_) {
-      clearTimeout(relogio);
-      encerrar(DOLBY_VISION_DESCONHECIDO);
+      encerrar(DOLBY_VISION_DESCONHECIDO, true);
       return;
     }
+    // A server may ignore Range. Refuse its body before buffering the movie;
+    // timeout must abort the real request as well as resolving the promise.
+    pedido.onreadystatechange = () => {
+      if (pedido.readyState !== 2) return;
+      const length = Number(pedido.getResponseHeader("Content-Length") || 0);
+      if (pedido.status !== 206 || length > BYTES_DE_LEITURA) {
+        encerrar(DOLBY_VISION_DESCONHECIDO, true);
+      }
+    };
+    pedido.onprogress = (event) => {
+      if (event.loaded > BYTES_DE_LEITURA) encerrar(DOLBY_VISION_DESCONHECIDO, true);
+    };
+    pedido.ontimeout = () => encerrar(DOLBY_VISION_DESCONHECIDO, true);
+    pedido.onabort = () => encerrar(DOLBY_VISION_DESCONHECIDO);
     pedido.onload = () => {
-      clearTimeout(relogio);
       const inicio = String(pedido.responseText || "");
+      if (pedido.status !== 206 || inicio.length > BYTES_DE_LEITURA) {
+        encerrar(DOLBY_VISION_DESCONHECIDO, true);
+        return;
+      }
       // `moov` ausente = indice no fim do arquivo: nao da para afirmar nada.
       if (inicio.indexOf("moov") < 0) {
         encerrar(DOLBY_VISION_DESCONHECIDO);
@@ -86,14 +111,12 @@ export function detectarEntradaDolbyVision(url) {
       encerrar(DOLBY_VISION_COMPATIVEL);
     };
     pedido.onerror = () => {
-      clearTimeout(relogio);
-      encerrar(DOLBY_VISION_DESCONHECIDO);
+      encerrar(DOLBY_VISION_DESCONHECIDO, true);
     };
     try {
       pedido.send(null);
     } catch (_) {
-      clearTimeout(relogio);
-      encerrar(DOLBY_VISION_DESCONHECIDO);
+      encerrar(DOLBY_VISION_DESCONHECIDO, true);
     }
   });
 }

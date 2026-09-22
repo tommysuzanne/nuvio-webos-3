@@ -28,6 +28,12 @@ const remote=[{id:'c',title:'Café / Discover',folders:[{id:'f',title:'Studio Gh
 const current={isCurrent:()=>true};
 collections.applyRemoteForProfile(1,remote,current);
 organization.applyRemoteForProfile(1,{order:['collection:c'],disabled:[],customTitles:{}},current);
+const filterFixture=[{id:'filters',title:'Filters',folders:[{id:'f',title:'Popular',sources:[{provider:'tmdb',tmdbSourceType:'DISCOVER',filters:{voteCountGte:50}}]}]}];
+const firstNormalization=collections.normalizeCollections(filterFixture);
+const normalizedAgain=collections.normalizeCollections(firstNormalization);
+assert.equal(normalizedAgain[0].folders[0].sources[0].filters.voteAverageLte,null,'Absent maximum rating must never become zero after repeated normalization');
+assert.equal(normalizedAgain[0].folders[0].sources[0].filters.voteCountGte,50);
+assert.equal(JSON.stringify(firstNormalization),JSON.stringify(normalizedAgain),'Collection normalization must be idempotent');
 const before=new Map(raw);
 for(const call of [()=>collections.replaceForProfile(1,[],{silentSync:true}),
   ()=>collections.replace([], {silentSync:true}),()=>organization.setOrder([], {silentSync:true}),

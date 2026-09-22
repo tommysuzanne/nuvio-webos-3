@@ -47,6 +47,12 @@ function normalizeFolderViewMode(value) {
   return CollectionFolderViewMode.TABBED_GRID;
 }
 
+function optionalNumber(value) {
+  if (value == null || value === "" || typeof value === "boolean") return null;
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
+}
+
 function normalizeTmdbFilters(value = {}) {
   const raw = value && typeof value === "object" ? value : {};
   return {
@@ -54,10 +60,10 @@ function normalizeTmdbFilters(value = {}) {
     withoutGenres: stringOrNull(raw.withoutGenres),
     releaseDateGte: stringOrNull(raw.releaseDateGte),
     releaseDateLte: stringOrNull(raw.releaseDateLte),
-    voteAverageGte: Number.isFinite(Number(raw.voteAverageGte)) ? Number(raw.voteAverageGte) : null,
-    voteAverageLte: Number.isFinite(Number(raw.voteAverageLte)) ? Number(raw.voteAverageLte) : null,
-    voteCountGte: Number.isFinite(Number(raw.voteCountGte))
-      ? Math.trunc(Number(raw.voteCountGte))
+    voteAverageGte: optionalNumber(raw.voteAverageGte),
+    voteAverageLte: optionalNumber(raw.voteAverageLte),
+    voteCountGte: optionalNumber(raw.voteCountGte) != null
+      ? Math.trunc(optionalNumber(raw.voteCountGte))
       : null,
     withOriginalLanguage: stringOrNull(raw.withOriginalLanguage),
     withOriginCountry: stringOrNull(raw.withOriginCountry),
@@ -90,7 +96,7 @@ function normalizeCollectionSource(source = {}) {
       title: stringOrEmpty(
         raw.title || tmdbSourceType.replace(/^./, (match) => match.toUpperCase())
       ),
-      tmdbId: Number.isFinite(Number(raw.tmdbId)) ? Math.trunc(Number(raw.tmdbId)) : null,
+      tmdbId: optionalNumber(raw.tmdbId) != null ? Math.trunc(optionalNumber(raw.tmdbId)) : null,
       mediaType: stringOrEmpty(raw.mediaType || "MOVIE").toUpperCase() === "TV" ? "TV" : "MOVIE",
       sortBy: stringOrEmpty(raw.sortBy || "popularity.desc") || "popularity.desc",
       filters: normalizeTmdbFilters(raw.filters)

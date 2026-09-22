@@ -18,9 +18,12 @@ export const MAX_PROFILES = 6;
 // (verified by grep), so invalidating the memo in the three writers below is
 // sufficient. `LocalStore.clear()` is not reachable from app code.
 let activeProfileIdCache = null;
+let activeProfileRevision = 0;
 
 function setActiveProfileIdCache(value) {
-  activeProfileIdCache = value == null ? null : String(value);
+  const next = value == null ? null : String(value);
+  if (next !== activeProfileIdCache) activeProfileRevision += 1;
+  activeProfileIdCache = next;
 }
 
 function invalidateActiveProfileIdCache() {
@@ -231,6 +234,11 @@ export const ProfileManager = {
       setActiveProfileIdCache("1");
     }
     return true;
+  },
+
+  getActiveProfileRevision() {
+    this.getActiveProfileId();
+    return activeProfileRevision;
   },
 
   getActiveProfileId() {

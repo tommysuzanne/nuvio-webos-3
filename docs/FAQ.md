@@ -4,7 +4,7 @@
 
 ## Will new collections appear without reinstalling?
 
-Yes, on an eligible refresh: Home/foreground entry after five minutes of freshness, or the manual **Refresh collections** action. There is no permanent polling. Create, edit and organize collections on another client; the TV receives them in read-only mode. Continue Watching uses local progress updates independently of that delay.
+Yes, on an eligible refresh: Home/foreground entry after one minute of freshness in build44 (five minutes in build43), or the manual **Refresh collections** action. There is no permanent polling. Create, edit and organize collections on another client; the TV receives them in read-only mode. Continue Watching uses local progress updates independently of that delay.
 
 ## Why is a cover missing?
 
@@ -16,6 +16,10 @@ No. Installers authenticate with their own account and configure their own addon
 
 Never post account exports, API keys, configured addon URLs or pairing credentials in issues. An addon URL can contain a secret even when its hostname is public.
 
+## Where can I see what changed?
+
+See the [build44 notes in English and French](UJ630/RELEASE-44.md), the [changelog](../CHANGELOG.md) and [GitHub Releases](https://github.com/tommysuzanne/nuvio-webos-3/releases). On GitHub, use **Watch → Custom → Releases** to receive release notifications. This does not enable automatic installation on the TV.
+
 ## Does it update itself automatically?
 
 Official automatic update checks are disabled on the legacy target. New upstream releases require integration and validation; install a reviewed IPK manually. Keep a backup and the previous working package. Restoring old code does not automatically restore old collections or playback progress. [Update and verify](UJ630/INSTALLATION.md#update-and-verify).
@@ -24,9 +28,9 @@ Official automatic update checks are disabled on the legacy target. New upstream
 
 Developer-installed apps depend on Developer Mode. Keep it enabled and renew its session before expiry. A USB drive alone does not create a permanent installation. This project provides no root or firmware changes. [Developer Mode and installation](UJ630/INSTALLATION.md).
 
-## Why does the IPK filename still contain UJ630?
+## Why do older IPK filenames contain UJ630?
 
-That is the original tested model. The build43 tag, filename and checksum retain their release identity after the repository rename. The performance policy detects the engine, not the TV model name; this does not qualify more models. [Compatibility](COMPATIBILITY.md) · [Release identity](MAINTENANCE.md).
+Build44 uses a webOS3 filename. UJ630 is the original tested model. The build43 tag, filename and checksum retain their release identity after the repository rename. The performance policy detects the engine, not the TV model name; this does not qualify more models. [Compatibility](COMPATIBILITY.md) · [Release identity](MAINTENANCE.md).
 
 ## Why is the Fluent Mode switch gone?
 

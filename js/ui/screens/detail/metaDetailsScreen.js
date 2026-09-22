@@ -1,3 +1,6 @@
+import { waitForUj630Hero } from "./uj630HeroReady.js";
+import { NativeTrailerDialog, nativeTrailerQuery } from "../../components/nativeTrailerDialog.js";
+import { watchTrailerStart } from "../../../core/player/trailerStartGuard.js";
 import { setUj630ImageHtml, setUj630BackgroundImage } from "../../components/uj630ScreenImages.js";
 import { Uj630Images } from "../../../core/media/uj630Images.js";
 ﻿import { supportsUj630Performance } from "../../../platform/uj630Performance.js";
@@ -989,7 +992,7 @@ function renderPlayGlyph() {
 }
 
 function renderTrailerGlyph() {
-  return `<svg class="series-btn-svg" viewBox="0 0 566.828 566.828" aria-hidden="true"><path d="M563.824,192.783c-1.58-17.399-3.85-32.944-6.801-46.659c-3.371-15.386-10.703-28.36-21.982-38.899c-11.285-10.539-24.412-16.652-39.383-18.348c-46.811-5.275-117.564-7.907-212.247-7.907c-94.688,0-165.436,2.632-212.248,7.907c-14.976,1.695-28.048,7.809-39.223,18.348c-11.181,10.539-18.458,23.513-21.824,38.899c-3.164,13.715-5.533,29.26-7.118,46.659c-1.579,17.399-2.479,31.793-2.687,43.183C0.098,247.343,0,263.163,0,283.414c0,20.238,0.104,36.053,0.312,47.449c0.208,11.377,1.107,25.777,2.687,43.17c1.585,17.398,3.843,32.957,6.799,46.658c3.372,15.41,10.704,28.373,21.983,38.912c11.279,10.551,24.407,16.67,39.382,18.348c46.812,5.275,117.559,7.906,212.248,7.906c94.683,0,165.431-2.631,212.247-7.906c14.971-1.684,28.043-7.797,39.225-18.348c11.174-10.539,18.451-23.502,21.822-38.912c3.164-13.701,5.533-29.26,7.119-46.658c1.578-17.398,2.479-31.793,2.686-43.17c0.209-11.391,0.318-27.211,0.318-47.449c0-20.251-0.109-36.065-0.318-47.448C566.303,224.57,565.402,210.176,563.824,192.783z M395.389,300.488L233.436,401.707c-2.956,2.111-6.537,3.164-10.753,3.164c-3.164,0-6.432-0.838-9.804-2.533c-6.958-3.795-10.441-9.688-10.441-17.705V182.189c0-8.005,3.476-13.923,10.441-17.717c7.167-3.794,14.021-3.568,20.557,0.63l161.953,101.219c6.328,3.599,9.492,9.29,9.492,17.087C404.875,291.223,401.711,296.914,395.389,300.488z" fill="currentColor"/></svg>`;
+  return `<svg class="series-btn-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10h18v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V10Zm0 0L2 5l18-3 1 5-18 3Zm4-6 4 4m3-5 4 4M7 15h10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 }
 
 function renderLibraryGlyph(isSaved = false) {
@@ -1789,6 +1792,7 @@ export const MetaDetailsScreen = {
   },
 
   async mount(params = {}, navigationContext = {}) {
+    this.nativeTrailerDialog?.close(false); this.nativeTrailerDialog = null;
     this.container = document.getElementById("detail");
     ScreenUtils.show(this.container);
     this.stopTrailerPlayback({
@@ -1905,6 +1909,7 @@ export const MetaDetailsScreen = {
     setUj630ImageHtml(this.container, `
       <div class="detail-loading-shell" aria-label="Loading detail">
         <div class="detail-loading-top">
+          ${supportsUj630Performance() && this.params?.fallbackTitle ? `<h1 class="uj-loading-title">${escapeHtml(this.params.fallbackTitle)}</h1>` : ""}
           <div class="detail-loading-block detail-loading-poster"></div>
         </div>
         <div class="detail-loading-meta">
@@ -2130,12 +2135,12 @@ export const MetaDetailsScreen = {
     this.maybeAutoOpenContinueWatchingStream();
     this.maybePlayOnLoad(token);
     void this.refreshTrailerSource(meta, token);
-    void this.loadTraktComments({ force: true });
+    if (!supportsUj630Performance()) void this.loadTraktComments({ force: true });
 
     // Match Android TV: recommendations are an independent detail-page job.
     // Starting them from the base meta keeps slower artwork/credits enrichment
     // (and its optional cast fallback) from delaying or starving this section.
-    void withTimeout(this.fetchMoreLikeThis(meta), 5000, [])
+    const loadRecommendations = () => withTimeout(this.fetchMoreLikeThis(meta), 5000, [])
       .then((items) => {
         if (token !== this.detailLoadToken) {
           return;
@@ -2147,9 +2152,28 @@ export const MetaDetailsScreen = {
         console.warn("More like this background load failed", error);
       });
 
+    if (!supportsUj630Performance()) void loadRecommendations();
+
     // Background enrichments: do not block initial screen rendering.
     (async () => {
-      const enrichedMeta = await withTimeout(this.enrichMeta(meta), 4000, meta);
+      // On old engines publish artwork/info before season metadata and cast
+      // fallback. Neither recommendations nor their image fan-out may queue
+      // ahead of the first useful header.
+      const publishHeader = supportsUj630Performance() ? async (header) => {
+        if (token !== this.detailLoadToken) return false;
+        this.meta = header;
+        this.castItems = extractCast(header);
+        this.updateRenderedDetailSections(header);
+        this.heroReadyWait?.cancel();
+        const wait = waitForUj630Hero(this.container, () => token === this.detailLoadToken);
+        this.heroReadyWait = wait;
+        await wait.promise;
+        if (this.heroReadyWait === wait) this.heroReadyWait = null;
+        return token === this.detailLoadToken;
+      } : null;
+      const enrichedMeta = publishHeader
+        ? await this.enrichMeta(meta, publishHeader)
+        : await withTimeout(this.enrichMeta(meta), 4000, meta);
       if (token !== this.detailLoadToken) {
         return;
       }
@@ -2162,8 +2186,13 @@ export const MetaDetailsScreen = {
       this.castItems = extractCast(this.meta);
       this.buildEpisodeState(progressItemsForDetail, allWatchedItems);
       this.trailerSource = resolveTrailerSource(this.meta);
+      if (supportsUj630Performance()) {
+        this.updateRenderedDetailSections(this.meta);
+        void loadRecommendations();
+      }
       if (!this.castItems.length) {
         const fallbackCast = await withTimeout(this.fetchTmdbCastFallback(this.meta), 3200, []);
+        if (token !== this.detailLoadToken) return;
         if (Array.isArray(fallbackCast) && fallbackCast.length) {
           this.castItems = fallbackCast;
         }
@@ -2937,12 +2966,13 @@ export const MetaDetailsScreen = {
     return false;
   },
 
-  async enrichMeta(meta) {
+  async enrichMeta(meta, publishHeader = null) {
     const settings = TmdbSettingsStore.get();
     if (!settings.enabled || !TMDB_API_KEY || !meta?.id) {
       return meta;
     }
 
+    let publishedMeta = meta;
     try {
       const tmdbId = await TmdbService.ensureTmdbId(meta.id, meta.type);
       if (!tmdbId) {
@@ -2951,47 +2981,15 @@ export const MetaDetailsScreen = {
       const enrichment = await TmdbMetadataService.fetchEnrichment({
         tmdbId,
         contentType: meta.type,
-        language: settings.language
+        language: settings.language,
+        includeTrailers: !supportsUj630Performance()
       });
       if (!enrichment) {
         return meta;
       }
       const isSeries = isSeriesDetailMeta(meta, meta?.videos || this.episodes);
-      const episodeMap =
-        settings.useEpisodes && isSeries
-          ? await TmdbMetadataService.fetchEpisodeEnrichment({
-              tmdbId,
-              seasonNumbers: (Array.isArray(meta.videos) ? meta.videos : [])
-                .map((video) => Number(video?.season || 0))
-                .filter((season) => season > 0),
-              language: settings.language
-            })
-          : new Map();
-      const videos =
-        episodeMap.size && Array.isArray(meta.videos)
-          ? meta.videos.map((video) => {
-              const key =
-                Number(video?.season || 0) > 0 && Number(video?.episode || 0) > 0
-                  ? `${Number(video.season)}:${Number(video.episode)}`
-                  : "";
-              const episode = key ? episodeMap.get(key) : null;
-              if (!episode) {
-                return video;
-              }
-              return {
-                ...video,
-                title: episode.title || video.title,
-                overview: episode.overview || video.overview,
-                released: settings.useReleaseDates
-                  ? episode.airDate || video.released
-                  : video.released,
-                thumbnail: episode.thumbnail || video.thumbnail,
-                runtime: episode.runtime || video.runtime
-              };
-            })
-          : meta.videos;
 
-      return {
+      const header = {
         ...meta,
         name: settings.useBasicInfo ? enrichment.localizedTitle || meta.name : meta.name,
         description: settings.useBasicInfo
@@ -3070,11 +3068,50 @@ export const MetaDetailsScreen = {
           settings.useCollections && enrichment.collectionId
             ? { id: enrichment.collectionId, name: enrichment.collectionName || "" }
             : meta.belongsToCollection || meta.belongs_to_collection || null,
-        videos
+        videos: meta.videos
       };
+      if (publishHeader) {
+        publishedMeta = header;
+        if (!await publishHeader(header)) return header;
+      }
+      const episodeMap =
+        settings.useEpisodes && isSeries
+          ? await TmdbMetadataService.fetchEpisodeEnrichment({
+              tmdbId,
+              seasonNumbers: (Array.isArray(meta.videos) ? meta.videos : [])
+                .map((video) => Number(video?.season || 0))
+                .filter((season) => season > 0),
+              language: settings.language
+            })
+          : new Map();
+      const videos =
+        episodeMap.size && Array.isArray(meta.videos)
+          ? meta.videos.map((video) => {
+              const key =
+                Number(video?.season || 0) > 0 && Number(video?.episode || 0) > 0
+                  ? `${Number(video.season)}:${Number(video.episode)}`
+                  : "";
+              const episode = key ? episodeMap.get(key) : null;
+              if (!episode) {
+                return video;
+              }
+              return {
+                ...video,
+                title: episode.title || video.title,
+                overview: episode.overview || video.overview,
+                released: settings.useReleaseDates
+                  ? episode.airDate || video.released
+                  : video.released,
+                thumbnail: episode.thumbnail || video.thumbnail,
+                runtime: episode.runtime || video.runtime
+              };
+            })
+          : meta.videos;
+
+      return { ...header, videos };
     } catch (error) {
       console.warn("Meta TMDB enrichment failed", error);
-      return meta;
+      return publishedMeta;
     }
   },
 
@@ -3122,7 +3159,8 @@ export const MetaDetailsScreen = {
     const enrichment = await TmdbMetadataService.fetchEnrichment({
       tmdbId,
       contentType: normalizedType,
-      language: settings.language
+      language: settings.language,
+      includeTrailers: !supportsUj630Performance()
     });
     const fallbackCast = extractCast({ credits: enrichment?.credits || null });
     return Array.isArray(fallbackCast) ? fallbackCast : [];
@@ -3442,12 +3480,14 @@ export const MetaDetailsScreen = {
       meta.logo || this.params?.fallbackLogo || "",
       "original"
     );
+    const titleMarkup = `<h1 class="series-detail-title">${escapeHtml(meta.name || this.params?.fallbackTitle || "Untitled")}</h1>`;
+    const logoMarkup = `<img src="${heroLogo}" data-uj-image-role="logo" class="series-detail-logo" alt="${escapeHtml(meta.name || "logo")}" decoding="async" fetchpriority="high" />`;
     const logoOrTitle = heroLogo
-      ? `<img src="${heroLogo}" class="series-detail-logo" alt="${escapeHtml(meta.name || "logo")}" decoding="async" fetchpriority="high" />`
-      : `<h1 class="series-detail-title">${escapeHtml(meta.name || "Untitled")}</h1>`;
+      ? supportsUj630Performance() ? `<div class="uj-detail-heading">${logoMarkup}${titleMarkup}</div>` : logoMarkup
+      : titleMarkup;
     const externalRatings = this.renderExternalRatingsRow(meta);
     const trailerSource = this.trailerSource || resolveTrailerSource(meta);
-    const hasTrailerCandidate = Boolean(trailerSource);
+    const hasTrailerCandidate = Boolean(trailerSource) || supportsUj630Performance();
     if (!this.trailerSource && trailerSource) {
       this.trailerSource = trailerSource;
     }
@@ -3754,7 +3794,7 @@ export const MetaDetailsScreen = {
       return;
     }
     const desired = resolveDetailBackdropUrl(meta);
-    if (supportsUj630Performance()) { setUj630BackgroundImage(node, desired); return; }
+    if (supportsUj630Performance()) { setUj630BackgroundImage(node, desired, "backdrop"); return; }
     if (node.dataset.backdropUrl === desired) {
       return;
     }
@@ -3826,7 +3866,7 @@ export const MetaDetailsScreen = {
         ? this.renderSeriesHeroMarkup(meta)
         : this.renderMovieHeroMarkup(meta);
       if (heroMarkup !== this._detailHeroMarkup) {
-        setUj630ImageHtml(heroMount, heroMarkup);
+        setUj630ImageHtml(heroMount, heroMarkup, { preserveImages: true });
         this._detailHeroMarkup = heroMarkup;
       }
     }
@@ -3845,17 +3885,17 @@ export const MetaDetailsScreen = {
     if (insightMount) {
       setUj630ImageHtml(insightMount, isSeries
         ? this.renderSeriesInsightSection()
-        : this.renderMovieInsightSection(meta));
+        : this.renderMovieInsightSection(meta), { skipUnchanged: true });
     }
 
     const commentsMount = this.container.querySelector("#detailCommentsSectionMount");
     if (commentsMount) {
-      setUj630ImageHtml(commentsMount, this.renderStandaloneCommentsSection());
+      setUj630ImageHtml(commentsMount, this.renderStandaloneCommentsSection(), { skipUnchanged: true });
     }
 
     const companyMount = this.container.querySelector("#detailCompanySectionsMount");
     if (companyMount) {
-      setUj630ImageHtml(companyMount, this.renderCompanySections(meta));
+      setUj630ImageHtml(companyMount, this.renderCompanySections(meta), { skipUnchanged: true });
     }
 
     ScreenUtils.indexFocusables(this.container);
@@ -3864,7 +3904,8 @@ export const MetaDetailsScreen = {
     this.scheduleEpisodeVirtualizationSync(this.getRememberedEpisodeIndex());
   },
   renderMovieInsightSection(meta) {
-    const trailerItems = resolveTrailerItems(meta);
+    if (supportsUj630Performance() && this.movieInsightTab === "trailer") this.movieInsightTab = "cast";
+    const trailerItems = supportsUj630Performance() ? [] : resolveTrailerItems(meta);
     const showRatings = showHomeRatings(LayoutPreferences.get().homeImdbRatingsVisibility);
     const tabItems = [
       ["cast", t("detail.creatorCast", {}, "Creator and Cast")],
@@ -3931,7 +3972,8 @@ export const MetaDetailsScreen = {
   },
 
   renderSeriesInsightSection() {
-    const trailerItems = resolveTrailerItems(this.meta);
+    if (supportsUj630Performance() && this.seriesInsightTab === "trailer") this.seriesInsightTab = "cast";
+    const trailerItems = supportsUj630Performance() ? [] : resolveTrailerItems(this.meta);
     const tabItems = [
       ["cast", t("detail.creatorCast", {}, "Creator and Cast")],
       ["ratings", t("detail.ratings", {}, "Ratings")],
@@ -7481,6 +7523,17 @@ export const MetaDetailsScreen = {
     initiatedByUser = true,
     preserveSource = false
   } = {}) {
+    if (supportsUj630Performance()) {
+      if (!initiatedByUser || (this.nativeTrailerDialog && !this.nativeTrailerDialog.closed)) return;
+      const focus = this.captureDetailFocus();
+      this.nativeTrailerDialog = new NativeTrailerDialog({
+        query: nativeTrailerQuery(this.meta, this.params),
+        onClose: () => this.focusDetailDescriptor(focus)
+      });
+      void this.nativeTrailerDialog.open();
+      return;
+    }
+    this.container?.querySelector(".uj-trailer-error")?.remove();
     const requestedFocusRestore = initiatedByUser ? this.captureDetailFocus() : null;
     // Android TV starts the already-resolved hero trailer immediately when the
     // button is pressed. Only resolve here when no prepared source exists.
@@ -7521,6 +7574,21 @@ export const MetaDetailsScreen = {
     }
     this.isTrailerPlaying = true;
     this.syncTrailerDom();
+    if (supportsUj630Performance() && this.trailerSource.kind === "youtube") {
+      this.cancelTrailerStartGuard = watchTrailerStart({
+        getCurrentTime: () => this.trailerProxyState?.currentTime,
+        onStall: () => {
+          this.stopTrailerPlayback({ restartAutoplay: false, immediateClear: true });
+          const actions = this.container?.querySelector(".series-detail-actions");
+          if (!actions) return;
+          const notice = document.createElement("p");
+          notice.className = "uj-trailer-error";
+          notice.setAttribute("role", "alert");
+          notice.textContent = "La bande-annonce ne démarre pas dans le lecteur intégré de cette TV. Vous pouvez réessayer ou revenir à la fiche.";
+          actions.insertAdjacentElement("afterend", notice);
+        }
+      });
+    }
     if (this.trailerPlaybackMode === "manual") {
       this.stopTrailerControlsTimer();
       this.setTrailerControlsVisible(false);
@@ -7537,6 +7605,8 @@ export const MetaDetailsScreen = {
     restoreFocus = true,
     immediateClear = false
   } = {}) {
+    this.cancelTrailerStartGuard?.();
+    this.cancelTrailerStartGuard = null;
     if (this.trailerAutoplayTimer) {
       clearTimeout(this.trailerAutoplayTimer);
       this.trailerAutoplayTimer = null;
@@ -9979,6 +10049,8 @@ export const MetaDetailsScreen = {
   },
 
   cleanup() {
+    this.heroReadyWait?.cancel(); this.heroReadyWait = null;
+    this.nativeTrailerDialog?.close(false); this.nativeTrailerDialog = null;
     if (supportsUj630Performance()) Uj630Images.releaseTree(this.container);
     this.detailLoadToken = (this.detailLoadToken || 0) + 1;
     this.cancelPendingEpisodeHold();

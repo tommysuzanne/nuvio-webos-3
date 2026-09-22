@@ -90,6 +90,11 @@
           "name": "imageProxySession",
           "description": "Keep bounded image proxy available while a navigation view subscribes",
           "public": true
+        },
+        {
+          "name": "nativeTrailers",
+          "description": "Find public VO/VF trailers and resolve a native MP4 URL on demand",
+          "public": true
         }
       ]
     }

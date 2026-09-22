@@ -154,7 +154,7 @@ export async function mountUj630Home(screen, params, context, helpers) {
     }
   };
   document.addEventListener("visibilitychange", screen.ujCollectionsVisible);
-  screen.ujCollectionsTimer = setTimeout(refreshCollections, 1200);
+  screen.ujCollectionsTimer = setTimeout(refreshCollections, 350);
   void refreshUj630Home(screen, helpers);
 }
 

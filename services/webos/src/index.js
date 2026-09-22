@@ -1562,6 +1562,29 @@ service.register("cancelProxyRead", function (message) {
   require("./supabaseProxy").cancelRequest(id);
   respond(message, Object.assign(buildBasePayload(), { cancelled: Boolean(context) }));
 });
+// Trailer lookups share the cancellable read registry; video bytes never transit Luna.
+var nativeTrailers = require("./nativeTrailers");
+var activeTrailerReads = 0;
+service.register("nativeTrailers", function(message) {
+  var payload = getMessagePayload(message);
+  var requestId = /^[a-zA-Z0-9_-]{1,96}$/.test(String(payload.requestId || "")) ? payload.requestId : null;
+  if (!requestId || activeTrailerReads >= 2 || activeProxyReads[requestId]) {
+    respond(message, {returnValue:false,errorCode:-1,errorText:"TRAILER_BUSY"}); return;
+  }
+  var context = requestContexts.create();
+  activeProxyReads[requestId] = context; activeTrailerReads += 1;
+  nativeTrailers.request(payload, context, function(error, result) {
+    if (activeProxyReads[requestId] === context) delete activeProxyReads[requestId];
+    activeTrailerReads -= 1;
+    // Complete the Luna message as well as the socket, even if the caller left.
+    // An unanswered message otherwise keeps the service's activity alive.
+    if (context.cancelled) {
+      respond(message, {returnValue:false,errorCode:-2,errorText:"CANCELLED"}); return;
+    }
+    respond(message, error ? {returnValue:false,errorCode:-1,errorText:String(error.message || "TRAILER_UNAVAILABLE")} : {returnValue:true,result:result});
+  });
+});
+
 registerSafeHttpProxyCommand("supabaseProxy");
 registerSafeHttpProxyCommand("safeHttpProxy");
 registerEngineFsKeepAliveCommands();

@@ -6,7 +6,7 @@ import { collectionSyncScope, getCollectionSurfaceSuccess } from "../sync/collec
 import { syncResult } from "../sync/syncResult.js";
 import { isUj630CollectionsReadOnly } from "../../platform/uj630Performance.js";
 
-const TTL = 5 * 60 * 1000;
+const TTL = 60 * 1000;
 const inFlight = new Map(), listeners = new Set();
 export const CollectionRefreshService = {
   subscribe(listener) { listeners.add(listener); return () => listeners.delete(listener); },

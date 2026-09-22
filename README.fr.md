@@ -2,7 +2,7 @@
 
 **Vos collections, une interface 1080p nette et Nuvio 1.1.2 sur les anciennes TV LG UHD / 4K.** Un port IPK non officiel pour **webOS 3.0 / 3.5**, construit sur la compatibilité legacy d’iqui27 et adapté sur une **LG 49UJ630V-ZA**. Les autres modèles restent à vérifier.
 
-**[Télécharger l’IPK](https://github.com/tommysuzanne/nuvio-webos-3/releases/latest)** · [Installer](docs/UJ630/INSTALLATION.md) · [Compatibilité](docs/COMPATIBILITY.md) · [English](README.md)
+**[Télécharger l’IPK](https://github.com/tommysuzanne/nuvio-webos-3/releases/latest)** · [Installer](docs/UJ630/INSTALLATION.md) · [Compatibilité](docs/COMPATIBILITY.md) · [Nouveautés](docs/UJ630/RELEASE-44.md#nouveautés-en-français) · [English](README.md)
 
 ## Pourquoi cette version existe
 
@@ -11,6 +11,8 @@ Pendant les premiers essais locaux sur l’UJ630, la navigation dans de nombreus
 Nous avons conservé la base de compatibilité d’iqui27, **porté Nuvio 1.1.2**, puis adapté la navigation, les images et la synchronisation. Sa preview webOS 3 exp.32 intègre **1.0.2 avec des correctifs legacy** ; sa release webOS 4, distincte, utilise 1.1.0. Comparaison vérifiée le 15 septembre 2026.
 
 Ces constats concernent cette TV et les premiers builds locaux ; ils ne démontrent pas un défaut généralisé des versions d’iqui27. [Historique, références et comparatif complet](docs/WHY-THIS-FORK.md).
+
+**Nouveautés de la version44 :** bandes-annonces VF/VO natives, fiches plus rapides à réafficher, filtres Bibliothèque conservés et corrections des onglets de collections vides et de la sonde MP4. [Détails et mise à jour](docs/UJ630/RELEASE-44.md#nouveautés-en-français).
 
 ## Est-ce le meilleur choix pour vous ?
 
@@ -21,7 +23,7 @@ Ces constats concernent cette TV et les premiers builds locaux ; ils ne démontr
 | Un accueil ciblé | Collections + Reprendre, avec épisodes suivants et futurs, sans catalogues supplémentaires imposés. |
 | Une navigation claire | Couvertures rectangulaires, menu compact à gauche, fond fixe et contour de sélection immédiat. |
 | Moins de travail pendant la navigation | Cartes affichées par fenêtre, caches bornés, chargement régulé des images et écrans chargés à la demande. |
-| Des collections actualisées | Rafraîchissement éligible à l’accueil ou au premier plan après cinq minutes, ou manuel ; rejet des réponses invalides ou périmées. |
+| Des collections actualisées | Rafraîchissement éligible à l’accueil ou au premier plan après une minute, ou manuel ; rejet des réponses invalides ou périmées. |
 | Des corrections au quotidien | Accents et synchronisation des addons corrigés, sources 4K placées en tête. |
 
 **Compromis :** collections organisées sur un autre appareil, réglages de performance fixes et mises à jour manuelles. Les couvertures trop lourdes ou incompatibles peuvent être remplacées par une carte avec titre. Les addons HTTP et le lecteur natif restent disponibles ; les plugins exécutables/P2P incompatibles sont bloqués. Une source 4K nécessite toujours des codecs et un débit adaptés à votre TV.
@@ -32,7 +34,7 @@ Pour retrouver la présentation animée par défaut, éditer les collections sur
 
 | Téléviseur | Statut |
 | --- | --- |
-| **LG 49UJ630V-ZA**, UHD, firmware 06.10.75 | Installation testée ; contrôles rapides de navigation/réglages réussis sur la version43. Limites ci-dessous. |
+| **LG 49UJ630V-ZA**, UHD, firmware 06.10.75 | Installation testée ; contrôles navigation/réglages sur la version43 et fiches/bandes-annonces sur le candidat personnel44 réussis. Limites ci-dessous. |
 | Autres **LG UHD / 4K webOS 3.0 / 3.5** | Non vérifiés ; retours par modèle bienvenus. |
 | **Full HD webOS 3.x** | Nécessite un autre paquet graphique ; cet IPK 1080p n’est pas validé. |
 | **webOS 1/2** | Non pris en charge. |
@@ -60,9 +62,9 @@ Version **42 historique**, 49UJ630V-ZA en **1080p**, trois passages contrôlés 
 | Premier accueil utilisable à chaud | Environ **1,59 à 1,86 s** |
 | Intervalle entre frames, p99 en navigation | **19,780 à 33,611 ms** |
 
-Le seuil p99 révisé est de 35 ms ; les échecs au seuil initial de 33 ms restent documentés. La version43 a reçu des contrôles rapides sur la TV avec des miniatures privées. **Le paquet public téléchargeable n’a pas reçu de qualification TV complète distincte.** La stabilité mémoire prolongée, l’avance précise HEVC et la couverture complète veille/redémarrage restent à valider.
+Le seuil p99 révisé est de 35 ms ; les échecs au seuil initial de 33 ms restent documentés. La version43 et le candidat personnel44 ont reçu des contrôles ciblés sur la TV avec des miniatures privées. **Le paquet public téléchargeable n’a pas reçu de qualification TV complète distincte.** La stabilité mémoire prolongée, l’avance précise HEVC et la couverture complète veille/redémarrage restent à valider.
 
-**41 groupes de régression UJ630 et 102 tests JavaScript natifs**, plus les contrôles de construction/compatibilité, tournent en CI. Cela ne prouve pas le « zéro lag ». [Mesures complètes, gains du refactor et limites](docs/UJ630/VALIDATION.md).
+**47 groupes de régression UJ630 et 102 tests JavaScript natifs**, plus les contrôles de construction/compatibilité, tournent en CI. Cela ne prouve pas le « zéro lag ». [Mesures complètes, gains du refactor et limites](docs/UJ630/VALIDATION.md).
 
 ## Compiler, contribuer ou demander de l’aide
 
