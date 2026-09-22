@@ -6,7 +6,7 @@ import {fileURLToPath} from 'node:url';
 import {execFileSync,spawnSync} from 'node:child_process';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
-const label='uj630-public.43';
+const label='webos3-public.44';
 const upstreamUrl='https://github.com/iqui27/NuvioTVSmart-legacy-webos/releases/download/webos3-exp.32/NuvioTV-webOS3-exp32.ipk';
 const upstreamSha='5f74f091f102f490be9407e4981cf3ef4a55bee719c632f711e1506e0645a160';
 const output=path.resolve(process.env.NUVIO_RELEASE_DIR||path.join(root,'../nuvio-public-release'));
@@ -41,7 +41,7 @@ try {
  if(result.status!==0)throw Error('Public package build failed');
  const packageBytes=fs.readFileSync(path.join(root,'space.nuvio.webos_1.1.2_all.ipk'));
  fs.mkdirSync(output,{recursive:true});
- const filename='Nuvio-1.1.2-UJ630-43-1080p.ipk';
+ const filename='Nuvio-1.1.2-webOS3-44-1080p.ipk';
  fs.writeFileSync(path.join(output,filename),packageBytes);
  fs.writeFileSync(path.join(output,'SHA256SUMS'),sha(packageBytes)+'  '+filename+'\n');
  let sourceCommit='unavailable',sourceDirty=null;
@@ -49,7 +49,7 @@ try {
   sourceCommit=execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8',stdio:['ignore','pipe','ignore']}).trim();
   sourceDirty=execFileSync('git',['status','--porcelain'],{cwd:root,encoding:'utf8'}).trim().length>0;
  }catch{}
- const manifest={label,sourceCommit,sourceDirty,appId:'space.nuvio.webos',upstreamAppVersion:'1.1.2',resolution:'1920x1080',node:process.version,package:{file:filename,bytes:packageBytes.length,sha256:sha(packageBytes)},configurationSource:{url:upstreamUrl,sha256:upstreamSha,scope:'Only existing public upstream client configuration; no personal settings, addon URLs, account sessions or artwork.'}};
+ const manifest={label,sourceCommit,sourceDirty,appId:'space.nuvio.webos',upstreamAppVersion:'1.1.2',resolution:'1920x1080',node:process.version,lockfileSha256:sha(fs.readFileSync(path.join(root,'package-lock.json'))),buildOptions:{fixedViewport:true,uiScale:0.8,uiResolution:'1920x1080'},package:{file:filename,bytes:packageBytes.length,sha256:sha(packageBytes)},configurationSource:{url:upstreamUrl,sha256:upstreamSha,scope:'Only existing public upstream client configuration; no personal settings, addon URLs, account sessions or artwork.'}};
  fs.writeFileSync(path.join(output,'release-manifest.json'),JSON.stringify(manifest,null,2)+'\n');
  console.log('Public release package ready: '+path.join(output,filename));
 } finally {

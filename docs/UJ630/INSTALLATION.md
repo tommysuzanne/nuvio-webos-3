@@ -6,7 +6,7 @@ Installing the published IPK with the graphical tool below does not require Node
 
 ## Ready-to-install public package
 
-Download the IPK and `SHA256SUMS` from [release 1.1.2-uj630.43](https://github.com/tommysuzanne/nuvio-webos-3/releases/tag/1.1.2-uj630.43). Verify with `shasum -a 256 -c SHA256SUMS` on macOS or `sha256sum -c SHA256SUMS` on Linux. Substitute its filename for the locally built package in the installation commands below.
+Download the IPK and `SHA256SUMS` from [release 1.1.2-webos3.44](https://github.com/tommysuzanne/nuvio-webos-3/releases/tag/1.1.2-webos3.44). Verify with `shasum -a 256 -c SHA256SUMS` on macOS or `sha256sum -c SHA256SUMS` on Linux. Substitute its filename for the locally built package in the installation commands below.
 
 This package uses only the existing public client configuration of the pinned `webos3-exp.32` upstream package. It includes no maintainer account, configured addons, personal API keys, collection exports or artwork. Authenticate with your own account. Public integration configuration is not a guarantee of continued access to upstream services.
 
@@ -44,7 +44,7 @@ Obtain the compatible package yourself from [the legacy project's releases](http
 
 Alternatively copy `local.example.properties` to ignored `local.properties`, supply configuration for a backend you are authorized to use, then run `npm run build:uj630`. Personal MDBList/TMDB keys and addon setup belong in your own application settings, not in Git. Do not commit a configured package, generated runtime configuration, or personal collection export.
 
-The output is `space.nuvio.webos_1.1.2_all.ipk` in the checkout. Check the printed build label and package name before installation. The build43 performance policy is permanent on the targeted legacy TV engine; the obsolete disabled flag is ignored without altering profile settings. The wrapper fixes the UI at 1920 × 1080. This is independent of the resolution of a movie.
+The output is `space.nuvio.webos_1.1.2_all.ipk` in the checkout. Check the printed build label and package name before installation. The performance policy introduced in build43 is permanent on the targeted legacy TV engine; the obsolete disabled flag is ignored without altering profile settings. The wrapper fixes the UI at 1920 × 1080. This is independent of the resolution of a movie.
 
 To check the build without backend configuration, run `npm run validate:public`. This makes a **CHECK-ONLY** placeholder package which cannot authenticate; never install or distribute it as a working release. The check refuses to overwrite existing `local.properties`.
 
@@ -74,8 +74,38 @@ Check the displayed build label, collections, Continue Watching, focus, a folder
 
 Developer Mode must remain enabled and its session renewed before expiry. Disabling it removes developer-installed apps under LG's rules. A USB drive is not a permanent installation mechanism. This project does not provide root, firmware changes or permanent installation.
 
-The TV's collections are read-only. Organize them on another client and use **Refresh collections**, or re-enter Home after the five-minute freshness interval. Authentication, progress, playback controls and Continue Watching hides remain available.
+The TV's collections are read-only. Organize them on another client and use **Refresh collections**, or re-enter Home after the one-minute freshness interval in build44 (five minutes in build43). Authentication, progress, playback controls and Continue Watching hides remain available.
 
 ## TV diagnostics
 
 The scripts under `scripts/uj630-tv/` are developer diagnostics, not part of CI and not automatic TV setup. Inspect each script's prerequisites before use. Media diagnostics require an explicit `NUVIO_MEDIA_URL` reachable from your TV; the loopback default is a placeholder, not your computer's LAN address. Keep raw diagnostic exports private and publish only sanitized summaries.
+
+## Build44 behavior
+
+[What’s new / nouveautés](RELEASE-44.md) lists the changes from build43. The Library movie/series filter survives a detail/back round trip within the same profile session; changing profiles, accounts or restarting resets it. One poster keeps its normal width.
+
+Collection refresh becomes eligible after one minute on Home/foreground entry or through the manual action. The initial background request waits for the first display and navigation idle. There is no periodic polling; full six-hour sync and image freshness are unchanged. Absent numeric TMDB filters remain absent, fixing unexpectedly empty collection tabs. Invalid responses and timeouts produce a retry state.
+
+Detail backdrops request w1280 and logos w500, with priority for hero artwork and a bounded contextual cache for revisits. Navigation posters remain w342. The shared queue, 1 MiB remote-image cap and decoded-image budget remain unchanged.
+
+The pre-playback MP4 format probe aborts at its deadline and rejects ignored or oversized byte-range responses. This fixes an unbounded-transfer risk; it does not establish that every TV memory restart has this cause.
+
+The top clapperboard button opens native VF/VO trailers from AlloCiné. It stays inside Nuvio with play/pause and Back, uses a white fixed-size selector and replaces the duplicate lower trailer tab. No YouTube iframe, extra API key, plugin or permanent server is required. See [provider limits and validation](TRAILERS.md).
+
+### Shared collections: advanced local option
+
+On the legacy engine, `nuvioDevicePerformance.collectionsSourceProfileId` may explicitly select a source profile (1–6) for **collections and Home organization only**. Omit it for independent collections, the public default. This is a device-local setting, not a remote preference or a new user-facing switch. The source profile must belong to the signed-in account.
+
+Reception still validates the active destination profile/session and applies locally without uploading; Library and watch progress keep their own profile. Changing the source invalidates pending responses and freshness. Back up before configuring this option; preserve the other fields in the local settings object. Use Refresh collections afterwards.
+
+### Restarting the companion service
+
+A service update may leave its previous process resident. Close Nuvio and stop **its own service** with the built-in command before relaunching, or restart the TV:
+
+```sh
+./node_modules/.bin/ares-launch --device lg-tv --close space.nuvio.webos
+./node_modules/.bin/ares-novacom --device lg-tv --run 'luna-send-pub -n 1 -f luna://space.nuvio.webos.service/quit "{}"'
+./node_modules/.bin/ares-launch --device lg-tv space.nuvio.webos
+```
+
+This normal service restart was required on the test TV to expose the new trailer method; it uses neither root nor a firmware change. Confirm the running public build label is `webos3-public.44`.

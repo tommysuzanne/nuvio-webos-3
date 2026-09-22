@@ -5,6 +5,7 @@ import {
   libraryRepository,
   libraryTypeLabel
 } from "../../../data/repository/libraryRepository.js";
+import { ProfileManager } from "../../../core/profile/profileManager.js";
 import { AuthManager } from "../../../core/auth/authManager.js";
 import { watchedItemsRepository } from "../../../data/repository/watchedItemsRepository.js";
 import { watchedTitleStateRepository } from "../../../data/repository/watchedTitleStateRepository.js";
@@ -63,6 +64,15 @@ export const LIBRARY_PRIVACY_OPTIONS = [
   LibraryListPrivacy.PUBLIC
 ];
 
+// Session-only navigation state: never sync a browsing filter to other devices.
+let retainedTypeFilter = null;
+function libraryFilterScope() {
+  return { profile: String(ProfileManager.getActiveProfileId()),
+    revision: ProfileManager.getActiveProfileRevision(), session: AuthManager.getSessionSignal() };
+}
+function sameFilterScope(a, b) {
+  return a && b && a.profile === b.profile && a.revision === b.revision && a.session === b.session;
+}
 let persistedPosterFocusKey = null;
 let persistedLibraryViewMode = LIBRARY_VIEW_MODE.SAVED;
 
@@ -464,7 +474,11 @@ function copyEditorState(state) {
 export class LibraryController {
   constructor(onChange = () => {}) {
     this.onChange = onChange;
+    this.filterScope = libraryFilterScope();
     this.state = makeInitialState();
+    if (sameFilterScope(retainedTypeFilter?.scope, this.filterScope)) {
+      this.state.selectedTypeKey = retainedTypeFilter.key;
+    }
     this.messageTimer = null;
     this.reloadToken = 0;
     this.disposed = false;
@@ -480,6 +494,9 @@ export class LibraryController {
   }
 
   dispose() {
+    if (sameFilterScope(this.filterScope, libraryFilterScope())) {
+      retainedTypeFilter = { scope: this.filterScope, key: this.state.selectedTypeKey };
+    }
     this.disposed = true;
     this.reloadToken += 1;
     this.unsubscribeDebridSettings?.();

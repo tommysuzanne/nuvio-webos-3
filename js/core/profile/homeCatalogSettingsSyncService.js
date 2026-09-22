@@ -2,7 +2,7 @@ import { validateRemoteCatalogSettings } from "../sync/remoteCollectionSnapshot.
 import { syncResult, syncError } from "../sync/syncResult.js";
 import { createCollectionSyncContext, recordCollectionSurfaceSuccess } from "../sync/collectionSyncContext.js";
 import { AuthManager } from "../auth/authManager.js";
-import { isUj630CollectionsReadOnly } from "../../platform/uj630Performance.js";
+import { isUj630CollectionsReadOnly, getUj630CollectionSourceProfileId } from "../../platform/uj630Performance.js";
 import { LocalStore } from "../storage/localStore.js";
 import { SessionStore } from "../storage/sessionStore.js";
 import { SupabaseApi } from "../../data/remote/supabase/supabaseApi.js";
@@ -620,7 +620,7 @@ export const HomeCatalogSettingsSyncService = {
     const context = createCollectionSyncContext("organization", id);
     try {
       const response = await SupabaseApi.rpc(PULL_RPC,
-        { p_profile_id: id, p_platform: HOME_CATALOG_SHARED_SYNC_PLATFORM }, true,
+        { p_profile_id: getUj630CollectionSourceProfileId(id), p_platform: HOME_CATALOG_SHARED_SYNC_PLATFORM }, true,
         { signal: context.signal });
       if (!context.isCurrent()) return syncResult("cancelled", "stale_context");
       const raw = validateRemoteCatalogSettings(extractSettingsJson(response));

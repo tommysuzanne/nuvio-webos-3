@@ -32,7 +32,7 @@ These are internal versions of this port, not an A/B against unmodified iqui27. 
 
 ## Automated public checks
 
-`npm run validate:public` runs 41 UJ630 regression groups, the native JavaScript tests, source checks, legacy JavaScript/CSS/API checks, a placeholder IPK build and ES5 parsing. It writes step results outside the checkout, to `NUVIO_EVIDENCE_DIR` or a sibling validation directory. CI runs with no account secrets and no TV. The initial local run passed all 41 groups and 102 native tests; the actual placeholder IPK passed ES5 parsing for 19 files, with three executable-plugin files blocked by the UJ630 policy ([local report](public-local-checks.json)). See the workflow result for the exact commit; local results alone are not TV evidence.
+`npm run validate:public` runs 47 UJ630 regression groups, the native JavaScript tests, source checks, legacy JavaScript/CSS/API checks, a placeholder IPK build and ES5 parsing. It writes step results outside the checkout, to `NUVIO_EVIDENCE_DIR` or a sibling validation directory. CI runs with no account secrets and no TV. The initial local run passed all 41 groups and 102 native tests; the actual placeholder IPK passed ES5 parsing for 19 files, with three executable-plugin files blocked by the UJ630 policy ([local report](public-local-checks.json)). See the workflow result for the exact commit; local results alone are not TV evidence.
 
 The regression groups cover read-only collections, rejected stale/invalid sync responses, per-profile state, pages/cache eviction, image budgets/revalidation, cancellation, Next Up recovery, focus and independent rescue-policy fixtures. The five rescue fixture source files are sufficient for those regression tests, not an installable rescue package.
 
@@ -40,7 +40,7 @@ The regression groups cover read-only collections, rejected stale/invalid sync r
 
 | Surface | Initial policy |
 | --- | --- |
-| Targeted collections refresh | 5 min freshness; eligible home/foreground entry or manual action; no polling |
+| Targeted collections refresh | Build44: 1 min freshness (release43: 5 min); eligible home/foreground entry or manual action; no polling |
 | Full synchronization | 6 h |
 | Page summaries | 1,000 entries / 4 MiB estimate / 5 min |
 | Full metadata | 128 entries / 8 MiB estimate / 30 min |
@@ -53,3 +53,19 @@ The regression groups cover read-only collections, rejected stale/invalid sync r
 | Next Up | 4 profiles / 32 series candidates / 5 min; one calculation, retry at 60 s then 5 min while Home is idle |
 
 Values are centralized in `js/platform/uj630Budgets.js` and the relevant image/Next Up policy modules. Active objects, engine overhead, service buffers and video memory are measured separately.
+
+## Candidate44-rc3 trailer checks (2026-09-22)
+
+Dune: Part Two and Reacher each offered VF and VO on the UJ630. All four short native playback checks advanced beyond two seconds with readyState 4, 1280 × 720 video and no media error. OK paused, time stayed stable, OK resumed; Back removed the native video and restored detail focus to the trailer button. These are targeted functional checks, not new memory/p99/30-minute playback qualification. The source offers advertised 1080 preference, covered by a regression fixture; the four actual provider streams tested were 720p. The obsolete YouTube path is not used for this legacy native flow.
+
+
+## Candidate44-rc4 detail updates (2026-09-22)
+
+The legacy detail page publishes full-quality header metadata before season enrichment, gives logo/backdrop requests priority within the existing two-read budget, and preserves decoded logos across ratings updates. Unchanged insight/comments/company sections keep their DOM. A bounded, event-driven 1.8 s head start for header images precedes secondary detail work; unmount cancels it. The contextual detail enrichment cache shares the existing 128-entry/8 MiB/30-minute metadata budget and is cleared with profile/language/addon context changes. No image size or compression setting is reduced (backdrop request w1280, logo w500).
+
+The native trailer chooser has a fixed-size white focus, the top action has a clapperboard icon, and legacy lower trailer tabs are removed. New regressions cover header-before-episodes publication, stale-screen exit, image retention/priority, cache separation and restored trailer-tab fallback. Candidate-specific local and TV results are recorded outside the sources. These changes do not constitute new memory, p99 or long-playback qualification.
+
+
+On the installed RC4, the three VF/VO/Back focused choices measured 919.61 px wide inside a 998.39 px panel, with white focus and no transform. RC3 measured 1011.57 px for the focused button, exceeding the panel by about 6.6 px on each side. Film and series checks found no lower trailer tab, including restoration of old saved tab state.
+
+Indicative same-TV reopen observations (one pass per build, 200 ms polling plus CDP overhead, uncontrolled provider latency): Interstellar backdrop/logo appeared at 7.117/8.978 s on RC3 and 3.955/5.274 s on warmed RC4; Severance at 7.967/8.218 s versus 4.803/4.803 s. RC4 first openings were slower than reopens (Interstellar both images 7.780 s; Severance both 5.757 s). Decoded source sizes stayed at 1280 px for the backdrop and 500 px for the logo. These observations show the cache benefit on the sampled titles; they are not cold-cache benchmarks, a universal latency promise or a strict frame-time qualification.

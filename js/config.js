@@ -11,7 +11,10 @@ export const DEVICE_LOGIN_WEB_BASE_URL = String(
 ).trim();
 export const YOUTUBE_PROXY_URL = String(
   runtimeEnv.YOUTUBE_PROXY_URL || "youtube-proxy.html"
-).trim();
+).trim().replace(
+  /^https:\/\/nuviomedia\.github\.io\/NuvioWeb\/youtube-proxy\.html(?=[?#]|$)/i,
+  "https://nuviomedia.github.io/NuvioTVSmart/youtube-proxy.html"
+);
 export const PARENTAL_GUIDE_API_URL = "https://api.tiffara.com/";
 export const INTRODB_API_URL = String(
   runtimeEnv.INTRODB_API_URL || "https://api.introdb.app/"

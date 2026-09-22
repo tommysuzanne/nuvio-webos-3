@@ -1,3 +1,39 @@
+# Changelog — Nuvio for LG webOS 3.x
+
+Port releases are listed first. Upstream version numbers and credits are preserved below; build44 is a port update, not a new upstream Nuvio version.
+
+## [1.1.2-webos3.44](https://github.com/tommysuzanne/nuvio-webos-3/releases/tag/1.1.2-webos3.44) — 2026-09-22
+
+### Added
+
+- Native AlloCiné VF/VO trailers, remote play/pause/Back and advertised 1080p preference.
+- Optional local shared collections within an account, without sharing Library or progress.
+
+### Improved
+
+- Priority loading and retention of full-quality detail artwork, with bounded contextual caching.
+- Collections refresh eligibility reduced from five minutes to one, without polling.
+
+### Fixed
+
+- Trailer selector overflow; a clapperboard icon replaces the play-like glyph, and the duplicate lower tab is removed.
+- Library filters resetting on Back and single-poster stretching.
+- Absent numeric filters becoming zero and hiding collection results; catalog errors now allow retry.
+- MP4 probe requests continuing after their deadline or accepting oversized bodies.
+
+[What's new / nouveautés, installation and validation limits](docs/UJ630/RELEASE-44.md).
+
+## [1.1.2-uj630.43](https://github.com/tommysuzanne/nuvio-webos-3/releases/tag/1.1.2-uj630.43) — 2026-09-14
+
+- Made the legacy performance policy permanent and removed the Fluent Mode switch.
+- Published a 1080p package without maintainer account data or personal artwork.
+
+[Build43 details](docs/UJ630/RELEASE-43.md).
+
+---
+
+# Historical upstream changelog
+
 > Historical upstream document retained for provenance. For the current UJ630 port, use [README](README.md) and [installation instructions](docs/UJ630/INSTALLATION.md).
 
 ## 1.1.2

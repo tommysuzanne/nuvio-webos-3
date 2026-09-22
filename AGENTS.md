@@ -7,7 +7,7 @@ Scope: this repository and its descendants. This is an unofficial JavaScript/web
 - Runtime behavior: code under `js/`, `css/` and `services/webos/`. Build behavior: `scripts/` and `package.json`; dependency resolution: `package-lock.json`.
 - Current upstream references and authorship: [NOTICE](NOTICE.md). This port integrates Nuvio 1.1.2 over iqui27's webOS 3 compatibility foundation; do not attribute upstream features to this project.
 - Supported/tested devices: [COMPATIBILITY](docs/COMPATIBILITY.md). Target is UHD webOS 3.0/3.5; only the documented UJ630 model has hardware evidence. Runtime detection is by engine, not model name.
-- Performance claims: [VALIDATION](docs/UJ630/VALIDATION.md) and its linked numeric evidence. Historical42 timings are not public build43 qualification or a same-device benchmark against iqui27. Retain failed thresholds and unresolved memory/playback limits.
+- Performance claims: [VALIDATION](docs/UJ630/VALIDATION.md) and its linked numeric evidence. Historical42 timings are not public build44 qualification or a same-device benchmark against iqui27. Retain failed thresholds and unresolved memory/playback limits.
 - Root historical documents and `docs/historical/` are archival context. Follow their banners; do not infer current versions or procedures from them.
 
 ## Code map
@@ -50,7 +50,7 @@ npm run validate:public
 
 ## Delivery and documentation
 
-Work on a `codex/<purpose>` branch and use a PR when GitHub delivery is requested. Honor the live [rulesets](https://github.com/tommysuzanne/nuvio-webos-3/rules): required `validate` check, squash merge, no force-push/deletion of protected refs and no bypass. See [MAINTENANCE](docs/MAINTENANCE.md).
+Work on a `codex/<purpose>` branch and use a PR when GitHub delivery is requested. Honor the live [rulesets](https://github.com/tommysuzanne/nuvio-webos-3/rules): required `validate` check, squash merge, no force-push/deletion of protected refs and no bypass. See [MAINTENANCE](docs/MAINTENANCE.md), including its publication checklist.
 
 Do not rebuild or replace released binaries/tags/checksums for documentation-only edits. A new release must identify its actual source revision and validation scope. Update English/French entry pages and the relevant detailed document together when behavior or compatibility changes; keep the README short and use relative links. Distinguish observed symptoms, suspected causes and measured results. Never describe a changed acceptance threshold as an unchanged pass.
 

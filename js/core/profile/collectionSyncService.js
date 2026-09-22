@@ -2,7 +2,7 @@ import { parseRemoteCollections } from "../sync/remoteCollectionSnapshot.js";
 import { syncResult, syncError } from "../sync/syncResult.js";
 import { createCollectionSyncContext, recordCollectionSurfaceSuccess } from "../sync/collectionSyncContext.js";
 import { AuthManager } from "../auth/authManager.js";
-import { isUj630CollectionsReadOnly } from "../../platform/uj630Performance.js";
+import { isUj630CollectionsReadOnly, getUj630CollectionSourceProfileId } from "../../platform/uj630Performance.js";
 import { SupabaseApi } from "../../data/remote/supabase/supabaseApi.js";
 import { CollectionsStore } from "../../data/local/collectionsStore.js";
 import { ProfileManager } from "./profileManager.js";
@@ -116,7 +116,7 @@ export const CollectionSyncService = {
     const resolvedProfileId = resolveProfileId(profileId);
     const context = createCollectionSyncContext("collections", resolvedProfileId);
     try {
-      const rows = await SupabaseApi.rpc(PULL_RPC, { p_profile_id: resolvedProfileId }, true,
+      const rows = await SupabaseApi.rpc(PULL_RPC, { p_profile_id: getUj630CollectionSourceProfileId(resolvedProfileId) }, true,
         { signal: context.signal });
       if (!context.isCurrent()) return syncResult("cancelled", "stale_context");
       const remoteCollections = CollectionsStore.normalizeCollections(parseRemoteCollections(rows));

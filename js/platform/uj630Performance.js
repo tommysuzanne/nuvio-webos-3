@@ -74,3 +74,14 @@ export function initializeUj630DevicePolicy() {
     if (!saved.homeContentMode || saved.collectionsReadOnly !== true) globalThis.localStorage.setItem(KEY,JSON.stringify({...saved,homeContentMode:saved.homeContentMode||"collections_resume",collectionsReadOnly:true}));
   } catch (_) {}
 }
+
+// Opt-in on this TV only. Never change the server's per-profile collections.
+export function getUj630CollectionSourceProfileId(profileId) {
+  const fallback = Number(profileId) > 0 ? Math.trunc(Number(profileId)) : 1;
+  if (!supportsUj630Performance()) return fallback;
+  try {
+    const saved = JSON.parse(globalThis.localStorage?.getItem(KEY) || "{}");
+    const source = Number(saved?.collectionsSourceProfileId);
+    return Number.isInteger(source) && source >= 1 && source <= 6 ? source : fallback;
+  } catch (_) { return fallback; }
+}

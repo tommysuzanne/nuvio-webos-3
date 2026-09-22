@@ -72,7 +72,7 @@ export async function mountUj630Folder(screen, params, context, helpers) {
     else if (right > strip.scrollLeft + strip.clientWidth) strip.scrollLeft = right - strip.clientWidth;
   }
   function selectTab(index) {
-    if (index === state.selected) { selectedTabs().forEach(tab => { tab.failedUntil=0; }); loadNext(); screen.ujBrowse.focusCurrent(); return; }
+    if (index === state.selected) { selectedTabs().forEach(tab => { tab.failedUntil=0; tab.error=false; tab.pages.forEach(page => { page.failedUntil=0; }); }); loadNext(); screen.ujBrowse.focusCurrent(); return; }
     state.controllers.forEach(controller => controller.abort()); state.controllers.clear();
     state.queue.length = 0; state.serial++; state.pending.clear();
     state.selected = index; screen.ujBrowse.focus = {row:0,col:0}; screen.ujBrowse.main.scrollTop = 0; screen.ujBrowse.scrollY = 0; screen.ujBrowse.windowDirty = true;
@@ -106,7 +106,7 @@ export async function mountUj630Folder(screen, params, context, helpers) {
     if (rows.length && !recovering) state.restore = null;
     screen.ujBrowse.setRows(rows, recovering ? null : restore);
     screen.container.querySelectorAll("[data-uj-tab]").forEach(node => node.classList.toggle("selected",Number(node.dataset.ujTab) === state.selected));
-    status(!items.length ? state.pending.size ? "Chargement…" : "Aucun contenu disponible." : "");
+    status(!items.length ? state.pending.size ? "Chargement…" : selectedTabs().some(tab => tab.error) ? "Source indisponible. Réessayer avec OK." : "Aucun contenu disponible." : "");
     if (!items.length && screen.ujBrowse.ownsFocus()) focusHeader();
     if (recovering) { status("Restauration de la position…"); loadNext(); }
   }
@@ -124,9 +124,10 @@ export async function mountUj630Folder(screen, params, context, helpers) {
     while (state.active < 2 && state.queue.length) {
       const job = state.queue.shift(); state.active++;
       const controller = new AbortController(); state.controllers.add(controller);
-      const expiry = setTimeout(() => { job.tab.failedUntil = Date.now()+30000; controller.abort(); }, 15000);
+      const expiry = setTimeout(() => { job.timedOut = true; if (job.serial === state.serial) job.tab.failedUntil = Date.now()+30000; controller.abort(); }, 15000);
       helpers.fetchSourceItems(job.tab.source, job.cursor.page, job.cursor.skip, controller.signal).then(result => {
         if (!current() || job.serial !== state.serial || controller.signal.aborted) return;
+        job.tab.error = false;
         const items = (result.items || []).filter(item => item.id);
         cachePage(job.cursor.key, items, job.neededIndex);
         job.cursor.ids = items.map(item => `${item.type}:${item.id}`);
@@ -139,7 +140,8 @@ export async function mountUj630Folder(screen, params, context, helpers) {
           job.tab.ended = !result.hasMore || !items.length;
         }
       }).catch(() => {
-        if (current() && job.serial === state.serial && !controller.signal.aborted) {
+        if (current() && job.serial === state.serial && (!controller.signal.aborted || job.timedOut)) {
+          job.tab.error = true;
           job.cursor.failedUntil = Date.now() + 30000;
           job.tab.failedUntil = job.cursor.failedUntil;
           status("Source indisponible. Réessayer avec OK.");

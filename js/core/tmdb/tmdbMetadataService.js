@@ -1,3 +1,4 @@
+import { supportsUj630Performance } from "../../platform/uj630Performance.js";
 import { fetchUj630Read } from "../network/uj630ReadContext.js";
 import { metadataContextRevision } from "../cache/cacheContext.js";
 import { createUj630Cache } from "../cache/uj630Caches.js";
@@ -66,6 +67,7 @@ const TMDB_LANGUAGE_DEFAULT_REGIONS = Object.freeze({
   vi: "VN",
   zh: "CN"
 });
+const detailEnrichmentCache = createUj630Cache("metadata", "detailEnrichment");
 const entityHeaderCache = createUj630Cache("tmdb", "entityHeaderCache");
 const entityRailCache = createUj630Cache("tmdb", "entityRailCache");
 const entityBrowseCache = createUj630Cache("tmdb", "entityBrowseCache");
@@ -675,7 +677,7 @@ function fallbackEntityHeader(entityKind, entityId, fallbackName = "") {
 }
 
 export const TmdbMetadataService = {
-  async fetchEnrichment({ tmdbId, contentType, language = null } = {}) {
+  async fetchEnrichment({ tmdbId, contentType, language = null, includeTrailers = true } = {}) {
     const settings = TmdbSettingsStore.get();
     const apiKey = String(TMDB_API_KEY || "").trim();
     if (!settings.enabled || !apiKey || !tmdbId) {
@@ -684,8 +686,13 @@ export const TmdbMetadataService = {
 
     const type = resolveType(contentType);
     const lang = normalizeMoreLikeThisLanguage(language || settings.language);
+    const cacheRevision = metadataContextRevision();
+    const cacheKey = `${type}:${tmdbId}:${lang}:${includeTrailers}`;
+    const cached = supportsUj630Performance() ? detailEnrichmentCache.get(cacheKey) : null;
+    if (cached) return cached;
+    const appended = "images,credits,release_dates,content_ratings,external_ids" + (includeTrailers ? ",videos" : "");
     const imageLanguages = buildTmdbImageLanguageFilter(lang);
-    const params = `api_key=${encodeURIComponent(apiKey)}&language=${encodeURIComponent(lang)}&append_to_response=images,credits,release_dates,content_ratings,videos,external_ids&include_image_language=${encodeURIComponent(imageLanguages)}`;
+    const params = `api_key=${encodeURIComponent(apiKey)}&language=${encodeURIComponent(lang)}&append_to_response=${appended}&include_image_language=${encodeURIComponent(imageLanguages)}`;
     const url = `${TMDB_BASE_URL}/${type}/${encodeURIComponent(String(tmdbId))}?${params}`;
 
     const response = await fetchUj630Read(url);
@@ -749,16 +756,16 @@ export const TmdbMetadataService = {
       type === "tv"
         ? Number((Array.isArray(data?.episode_run_time) ? data.episode_run_time[0] : 0) || 0)
         : Number(data?.runtime || 0);
-    const trailerCandidates = await resolveTrailerCandidates({
+    const trailerCandidates = includeTrailers ? await resolveTrailerCandidates({
       type,
       tmdbId,
       apiKey,
       language: lang,
       initialResults: Array.isArray(data?.videos?.results) ? data.videos.results : []
-    });
+    }) : [];
     const trailers = mapTrailerCandidates(trailerCandidates);
 
-    return {
+    const enrichment = {
       localizedTitle: localizedTitle || null,
       description: data.overview || null,
       backdrop: toImageUrl(data.backdrop_path, "backdrop"),
@@ -786,6 +793,9 @@ export const TmdbMetadataService = {
       collectionId: data?.belongs_to_collection?.id ? String(data.belongs_to_collection.id) : null,
       collectionName: data?.belongs_to_collection?.name || null
     };
+    if (cacheRevision !== metadataContextRevision()) return null;
+    if (supportsUj630Performance()) detailEnrichmentCache.set(cacheKey, enrichment);
+    return enrichment;
   },
 
   // Post-play uses the same dedicated trailer phase as Android's

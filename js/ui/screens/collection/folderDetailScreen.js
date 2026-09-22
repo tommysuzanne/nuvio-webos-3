@@ -433,7 +433,8 @@ function buildFolderSourceKey(source = {}, index = 0) {
 
 async function fetchJson(url, options = {}) {
   const response = await fetch(url, options);
-  const payload = await response.json().catch(() => null);
+  const payload = await response.json();
+  if (!payload || typeof payload !== "object") throw new Error("Invalid catalog response");
   if (!response.ok) {
     throw new Error(
       String(payload?.message || payload?.error || response.statusText || "Request failed")
@@ -806,7 +807,7 @@ async function fetchTraktSourceItems(source = {}, page = 1, signal = null) {
   url.searchParams.set("sort_by", String(source.sortBy || "rank"));
   url.searchParams.set("sort_how", String(source.sortHow || "asc"));
   const response = await fetch(url.toString(), { headers: buildTraktHeaders(), signal });
-  const payload = await response.json().catch(() => []);
+  const payload = await response.json();
   if (!response.ok) {
     throw new Error(
       String(
@@ -814,6 +815,7 @@ async function fetchTraktSourceItems(source = {}, page = 1, signal = null) {
       )
     );
   }
+  if (!Array.isArray(payload)) throw new Error("Invalid Trakt catalog response");
   const pageCount = Number(response.headers.get("X-Pagination-Page-Count") || page);
   const items = (Array.isArray(payload) ? payload : [])
     .map((entry) => {

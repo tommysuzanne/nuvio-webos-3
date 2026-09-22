@@ -12,3 +12,12 @@ let current=null,removed=0;const background={style:{backgroundImage:'old'},query
 api.background(background,'https://image.tmdb.org/t/p/w500/b.jpg');assert.equal(background.style.backgroundImage,'');assert.equal(current.dataset.src,'https://image.tmdb.org/t/p/w500/b.jpg');assert.equal(events.at(-1)[0],'enqueue');const count=events.length;api.background(background,current.dataset.src);assert.equal(events.length,count,'no recurring assignment when unchanged');
 api.background(background,'');assert.equal(current,null);assert.equal(removed,1);assert.equal(background.style.backgroundImage,'');
 console.log('PASS detail/chooser images defer remote src before DOM insertion, share queue, retain local icons and clean replaced backgrounds; other platforms unchanged.');
+legacy=true;
+function img(url){return {dataset:{src:url,ujImageRole:'logo'},attrs:{alt:'Title'},getAttribute(k){return this.attrs[k]},setAttribute(k,v){this.attrs[k]=v}}}
+let old=img('https://fixture.test/logo.png');old.decoded=true;let children=[old],inserts=0;
+const stable={querySelectorAll:()=>children,removeChild(n){children=children.filter(x=>x!==n);n.parentNode=null},replaceChild(a,b){children=children.map(x=>x===b?a:x);a.parentNode=this;},set innerHTML(value){inserts++;children=[img(value.includes('changed')?'https://fixture.test/new.png':'https://fixture.test/logo.png')];children.forEach(x=>x.parentNode=this)}};old.parentNode=stable;
+api.set(stable,'header', {preserveImages:true});assert.equal(children[0],old);assert(children[0].decoded);
+api.set(stable,'header', {preserveImages:true});assert.equal(inserts,1,'Unchanged header does not recreate image DOM');
+api.set(stable,'ratings updated', {preserveImages:true});assert.equal(children[0],old,'A ratings update retains the decoded title image');
+events.length=0;api.set(stable,'changed artwork', {preserveImages:true});assert.notEqual(children[0],old);assert(events.some(([type,root])=>type==='release'&&root!==stable&&root.querySelectorAll()[0]===old),'Replaced URLs release the old image');
+console.log('PASS stable detail sections and decoded-logo retention across metadata updates; changed URLs release old buffers.');

@@ -1,3 +1,4 @@
+import { getUj630CollectionSourceProfileId } from "../../platform/uj630Performance.js";
 import { AuthManager } from "../auth/authManager.js";
 import { ProfileManager } from "../profile/profileManager.js";
 import { SessionStore } from "../storage/sessionStore.js";
@@ -15,7 +16,7 @@ export function collectionSyncScope(profileId = ProfileManager.getActiveProfileI
     account = String(JSON.parse(atob(normalized.padEnd(Math.ceil(normalized.length / 4) * 4, "="))).sub || "");
   } catch (_) {}
   // Scope identifiers are local metadata, never sent in diagnostics.
-  return account ? `${account}:${String(profileId || 1)}` : null;
+  return account ? `${account}:${String(profileId || 1)}:source:${getUj630CollectionSourceProfileId(profileId)}` : null;
 }
 export function createCollectionSyncContext(surface, profileId) {
   const session = AuthManager.getSessionSignal?.();
